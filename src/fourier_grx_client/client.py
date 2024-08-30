@@ -60,7 +60,7 @@ class RobotClient(ZenohSession):
             logger.add(sys.stderr, level="INFO")
         conf = zenoh.Config()
         conf.insert_json5(zenoh.config.CONNECT_KEY, json.dumps([f"tcp/{server_ip}:7447"]))
-        # conf.insert_json5("scouting/multicast/enabled", "false")
+        conf.insert_json5("scouting/multicast/enabled", "false")
         conf.insert_json5("scouting/gossip/enabled", "false")
         super().__init__(namespace, conf)
         self.freq = freq
