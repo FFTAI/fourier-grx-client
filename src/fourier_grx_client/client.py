@@ -40,13 +40,13 @@ class RobotClient(ZenohSession):
     default_positions = DEFAULT_POSITIONS
     default_group_positions = {group: DEFAULT_POSITIONS[group.slice].copy() for group in ControlGroup}
 
-    def __init__(self, freq: int = 400, namesapce: str = "gr", server_ip: str = "localhost", verbose: bool = False):
+    def __init__(self, freq: int = 400, namespace: str = "gr", server_ip: str = "localhost", verbose: bool = False):
         """The client class for GR series robots.
 
         Args:
             server_ip (str, optional): IP address of the grx server. Please make sure to properly setup the firewall to allow port 7447. Defaults to "localhost".
             freq (int, optional): Robot state update frequency. Usually the user doesn't need to modify this. Defaults to 400.
-            namesapce (str, optional): Robot namespace. Defaults to "gr".
+            namespace (str, optional): Robot namespace. Defaults to "gr".
             verbose (bool, optional): Whether to print debug messages. Defaults to False.
 
         Raises:
@@ -62,7 +62,7 @@ class RobotClient(ZenohSession):
         conf.insert_json5(zenoh.config.CONNECT_KEY, json.dumps([f"tcp/{server_ip}:7447"]))
         # conf.insert_json5("scouting/multicast/enabled", "false")
         conf.insert_json5("scouting/gossip/enabled", "false")
-        super().__init__(namesapce, conf)
+        super().__init__(namespace, conf)
         self.freq = freq
 
         self._abort_event = threading.Event()
