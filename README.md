@@ -18,7 +18,7 @@ On the robot, install `fourier-grx==0.1.0rc3` following the instructions [here](
 Run:
 
 ```bash
-pip install fourier-grx-client==0.1.0
+pip install fourier-grx-client==0.2.0
 ```
 
 ## Usage
