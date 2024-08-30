@@ -5,26 +5,25 @@ import sys
 import threading
 import time
 from collections import defaultdict
-from typing import Optional
+from pathlib import Path
+from typing import Literal
 
 import msgpack_numpy as m
 import numpy as np
 import zenoh
 from loguru import logger
-from rich.console import Console
+from omegaconf import OmegaConf
 from rich.progress import track
 
 from .constants import DEFAULT_POSITIONS
 from .exceptions import FourierConnectionError, FourierValueError
-from .utils import ControlGroup, Serde, Trajectory
+from .utils import ControlGroup, ControlMode, Serde, Trajectory
 from .zenoh import ZenohSession
 
 m.patch()
 
 zenoh.init_logger()
-console = Console()
-log = console.log
-print = console.print
+
 
 np.set_printoptions(precision=2, suppress=True)
 
@@ -34,20 +33,21 @@ class RobotClient(ZenohSession):
     Example:
 
         >>> from fourier_grx_client import RobotClient
-        >>> r = RobotClient()
+        >>> r = RobotClient(namespace="gr/my_awesome_robot", server_ip="192.168.6.6")
     """
 
     default_positions = DEFAULT_POSITIONS
     default_group_positions = {group: DEFAULT_POSITIONS[group.slice].copy() for group in ControlGroup}
 
-    def __init__(self, freq: int = 400, namesapce: str = "gr", server_ip: str = "localhost", verbose: bool = False):
+    def __init__(
+        self, freq: int = 400, namespace: str | None = None, server_ip: str = "localhost", verbose: bool = False
+    ):
         """The client class for GR series robots.
 
         Args:
             server_ip (str, optional): IP address of the grx server. Please make sure to properly setup the firewall to allow port 7447. Defaults to "localhost".
             freq (int, optional): Robot state update frequency. Usually the user doesn't need to modify this. Defaults to 400.
-            namesapce (str, optional): Robot namespace. Defaults to "gr".
-            verbose (bool, optional): Whether to print debug messages. Defaults to False.
+            namespace (str, optional): Robot namespace. If not provided, it will try to use the `robot_id` provided in `~/.fourier/robot_id.yaml`. If the file does not exist, it will be created using the computer username. Defaults to None.
 
         Raises:
             FourierConnectionError: If the connection to the server failed.
@@ -58,11 +58,30 @@ class RobotClient(ZenohSession):
         else:
             logger.remove()
             logger.add(sys.stderr, level="INFO")
-        conf = zenoh.Config()
-        conf.insert_json5(zenoh.config.CONNECT_KEY, json.dumps([f"tcp/{server_ip}:7447"]))
-        conf.insert_json5("scouting/multicast/enabled", "false")
-        conf.insert_json5("scouting/gossip/enabled", "false")
-        super().__init__(namesapce, conf)
+        if namespace is None:
+            robot_serial_number_store_path = Path.home() / ".fourier" / "robot_id.yaml"
+            if not robot_serial_number_store_path.exists():
+                # create the folder
+                robot_serial_number_store_path.parent.mkdir(parents=True, exist_ok=True)
+
+                # write the default serial number
+                with open(robot_serial_number_store_path, "w") as f:
+                    f.write(f"robot_id: robot_{Path.home().name}")
+
+            robot_id = OmegaConf.load(robot_serial_number_store_path)["robot_id"]
+            namespace = f"gr/{robot_id}"
+
+        logger.success(f"RobotClient namespace = {namespace}")
+
+        # -------------------------
+
+        zenoh_config = zenoh.Config()
+        zenoh_config.insert_json5(zenoh.config.CONNECT_KEY, json.dumps([f"tcp/{server_ip}:7447"]))
+        zenoh_config.insert_json5("scouting/multicast/enabled", "false")
+        zenoh_config.insert_json5("scouting/gossip/enabled", "false")
+
+        super().__init__(prefix=namespace, config=zenoh_config)
+
         self.freq = freq
 
         self._abort_event = threading.Event()
@@ -79,7 +98,7 @@ class RobotClient(ZenohSession):
         self.server_connected = True
 
         # dict to store the states of the robot, updated by the subscriber callback
-        self.states: dict[str, defaultdict[str, Optional[list]]] = {
+        self.states: dict[str, defaultdict[str, list | None]] = {
             "imu": defaultdict(lambda: None),
             "joint": defaultdict(lambda: None),
             "base": defaultdict(lambda: None),
@@ -88,26 +107,41 @@ class RobotClient(ZenohSession):
         # subscribers for the robot states
         self._subscribers = {
             "imu": self.session.declare_subscriber(
-                f"{self.prefix}/imu/*",
-                self._sensor_callback,
+                keyexpr=f"{self.prefix}/imu/*",
+                handler=self._state_callback,
                 reliability=zenoh.Reliability.BEST_EFFORT(),
             ),
             "joint": self.session.declare_subscriber(
-                f"{self.prefix}/joint/*",
-                self._sensor_callback,
+                keyexpr=f"{self.prefix}/joint/*",
+                handler=self._state_callback,
                 reliability=zenoh.Reliability.BEST_EFFORT(),
             ),
             "base": self.session.declare_subscriber(
-                f"{self.prefix}/base/*",
-                self._sensor_callback,
+                keyexpr=f"{self.prefix}/base/*",
+                handler=self._state_callback,
                 reliability=zenoh.Reliability.BEST_EFFORT(),
             ),
         }
 
         # publishers for the robot control
         self._publishers = {
-            "positions": self.session.declare_publisher(
-                f"{self.prefix}/control/joints/position",
+            "position": self.session.declare_publisher(
+                keyexpr=f"{self.prefix}/control/joints/position",
+                priority=zenoh.Priority.REAL_TIME(),
+                congestion_control=zenoh.CongestionControl.DROP(),
+            ),
+            "velocity": self.session.declare_publisher(
+                keyexpr=f"{self.prefix}/control/joints/velocity",
+                priority=zenoh.Priority.REAL_TIME(),
+                congestion_control=zenoh.CongestionControl.DROP(),
+            ),
+            "effort": self.session.declare_publisher(
+                keyexpr=f"{self.prefix}/control/joints/effort",
+                priority=zenoh.Priority.REAL_TIME(),
+                congestion_control=zenoh.CongestionControl.DROP(),
+            ),
+            "current": self.session.declare_publisher(
+                keyexpr=f"{self.prefix}/control/joints/current",
                 priority=zenoh.Priority.REAL_TIME(),
                 congestion_control=zenoh.CongestionControl.DROP(),
             ),
@@ -115,6 +149,21 @@ class RobotClient(ZenohSession):
 
         # sleep for a while to wait for the subscriber to receive the initial states
         time.sleep(0.5)
+        while self.states["joint"]["position"] is None:
+            logger.info("Waiting for joint positions...")
+            time.sleep(0.1)
+
+        logger.success("RobotClient OK!")
+
+    def _state_callback(self, sample):
+        state_value_type = str(sample.key_expr).split("/")[-2]
+        state_value_name = str(sample.key_expr).split("/")[-1]
+        state_value: list = Serde.unpack(sample.payload)
+
+        if state_value_type not in self.states:
+            raise ValueError(f"Unknown state type: {state_value_type}")
+
+        self.states[state_value_type][state_value_name] = state_value
 
     def get_group_position(self, group: ControlGroup):
         """Get the joint positions of a group."""
@@ -141,34 +190,31 @@ class RobotClient(ZenohSession):
         return position
 
     @property
-    def joint_velocities(self):
+    def joint_velocity(self):
         """Get the current joint velocities of the robot."""
         velocity = np.asarray(self.states["joint"]["velocity"])
         return velocity
 
     @property
+    def joint_effort(self):
+        """Get the current joint efforts of the robot."""
+        effort = np.asarray(self.states["joint"]["effort"])
+        return effort
+
+    @property
+    def joint_current(self):
+        """Get the current joint currents of the robot."""
+        current = np.asarray(self.states["joint"]["current"])
+        return current
+
+    @property
+    def number_of_joint(self):
+        return len(self.joint_positions)
+
+    @property
     def is_moving(self):
         """Whether the robot is currently moving."""
         return self._move_lock.locked()
-
-    def liveness_check(self):
-        """Check if the robot server is alive."""
-
-        info = self._call_service_wait("robot/info", timeout=1.0)
-        if info is None:
-            raise FourierConnectionError(
-                "Failed to connect to the robot server.  Please make sure the server is running."
-            )
-
-    def _sensor_callback(self, sample):
-        sensor_type = str(sample.key_expr).split("/")[-2]
-        sensor_name = str(sample.key_expr).split("/")[-1]
-        sensor_reading: list = Serde.unpack(sample.payload)
-        if sensor_type not in self.states:
-            raise ValueError(f"Unknown sensor type: {sensor_type}")
-        self.states[sensor_type][sensor_name] = sensor_reading
-
-        # print(f"Received '{sample.key_expr}': '{joint_value}, {joint_value.shape}'")
 
     def set_enable(self, enable: bool):
         """Enable or disable the motors."""
@@ -189,94 +235,96 @@ class RobotClient(ZenohSession):
 
         self._call_service_wait("control/set_home", timeout=11.0)
 
-    def get_transform(self, target_frame: str, source_frame: str, q: np.ndarray | None = None):
-        """Get the transformation matrix between two frames in configuration `q`. If `q` is None, the current joint positions are used.
-
-        Args:
-            target_frame (str): Name of the frame to get the pose of.
-            source_frame (str): Name of the frame to get the pose in.
-            q (np.ndarray, optional): The robot confiuration to do forward kinematics in. Defaults to None.
-
-        Returns:
-            np.ndarray: The transformation matrix.
-        """
-
-        res = self._call_service_wait(
-            f"tf/{source_frame}/{target_frame}",
-            value=Serde.pack(q) if q is not None else None,
-            timeout=1.0,
-        )
-        return np.array(res)
-
-    def list_frames(self):
-        """List all available frames."""
-
-        res = self._call_service_wait(
-            "tf/list",
-            timeout=1.0,
-        )
-        return res
-
-    def set_gains(self, kp: np.ndarray, kd: np.ndarray, control_mode: np.ndarray | None = None):
-        """Set the gains for the joints.
-
-
-        Args:
-            kp (np.ndarray): The proportional gains.
-            kd (np.ndarray): The derivative gains.
-            control_mode (np.ndarray, optional): The control mode for each joint. Defaults to None.
-
-        """
-        kp = np.asanyarray(kp)
-        kd = np.asanyarray(kd)
-        if control_mode is None:
-            control_mode = np.array([9] * 32)
-        else:
-            control_mode = np.asanyarray(control_mode, dtype=int)
-
-        """Currently only support position control"""
-
-        if self.joint_positions is None:
-            logger.warning("Joint positions not available, retrying...")
-            time.sleep(0.1)
-
-        if kp.shape != (self.joint_positions.shape[0],) or kd.shape != (self.joint_positions.shape[0],):
-            raise ValueError(
-                f"Invalid kp/kd shape: {kp.shape}/{kd.shape}, expected: {(self.joint_positions.shape[0],)}"
-            )
+    def get_gains(self):
+        """Get the control gains for all joints."""
 
         res = self._call_service_wait(
             "control/gains",
-            value=Serde.pack(
-                {
-                    "control_mode": list(control_mode),
-                    "kp": list(kp),
-                    "kd": list(kd),
-                }
-            ),
             timeout=0.1,
         )
         return res
 
-    def reboot(self):
-        """Reboot the motors."""
+    def get_control_modes(self):
+        """Get the control modes for all joints."""
 
-        self._call_service_wait("control/reboot", timeout=10.0)
-        self._update_pos()
-        time.sleep(0.1)
-        self._update_pos()
-        time.sleep(0.1)
-        self._update_pos()
+        res = self._call_service_wait(
+            "control/modes",
+            timeout=0.1,
+        )
+        return res
 
-    def _update_pos(self):
-        """Update the joint positions command to the measured values.
+    def set_control_modes(self, control_mode: ControlMode | list[ControlMode] | None = None):
+        """Set the control modes for all joints.
 
-        This is useful when the robot is moved manually and the joint positions are not updated.
+        Args:
+            control_mode (ControlMode | list[ControlMode] | None, optional): ControlMode can be PD, VELOCITY, CURRENT. Defaults to None.
         """
-        # silently ignore if the robot is moving
-        if self._move_lock.locked():
-            return
-        self._publish("positions", self.states["joint"]["position"])
+        out_control_mode = [ControlMode.PD.value] * self.number_of_joint
+        if control_mode is None:
+            out_control_mode = [ControlMode.NONE.value] * self.number_of_joint
+
+        if isinstance(control_mode, ControlMode):
+            out_control_mode = [control_mode.value] * self.number_of_joint
+
+        if isinstance(control_mode, list) and len(control_mode) == self.number_of_joint:
+            out_control_mode = [mode.value for mode in control_mode]
+
+        res = self._call_service_wait(
+            "control/modes",
+            value=Serde.pack(out_control_mode),
+            timeout=0.1,
+        )
+        return res
+
+    def set_gains(
+        self,
+        position_control_kp: list[float] | None = None,
+        velocity_control_kp: list[float] | None = None,
+        velocity_control_ki: list[float] | None = None,
+        pd_control_kp: list[float] | None = None,
+        pd_control_kd: list[float] | None = None,
+    ):
+        gains = {}
+        if position_control_kp is not None and len(position_control_kp) == self.number_of_joint:
+            gains["position_control_kp"] = position_control_kp
+        if velocity_control_kp is not None and len(velocity_control_kp) == self.number_of_joint:
+            gains["velocity_control_kp"] = velocity_control_kp
+        if velocity_control_ki is not None and len(velocity_control_ki) == self.number_of_joint:
+            gains["velocity_control_ki"] = velocity_control_ki
+        if pd_control_kp is not None and len(pd_control_kp) == self.number_of_joint:
+            gains["pd_control_kp"] = pd_control_kp
+        if pd_control_kd is not None and len(pd_control_kd) == self.number_of_joint:
+            gains["pd_control_kd"] = pd_control_kd
+
+        res = self._call_service_wait(
+            "control/gains",
+            value=Serde.pack(gains),
+            timeout=0.1,
+        )
+        return res
+
+    def control_joints(
+        self,
+        control_type: Literal["position", "velocity", "effort", "current"],
+        commands: np.ndarray | list,
+    ):
+        """Control the joints in a group with the specified control type.
+
+        Args:
+            control_type (Literal["position", "velocity", "current"]): The control type to set.
+            commands (np.ndarray | list): The control commands to set.
+        """
+
+        # TODO: figure out how to fill in missing velocity and current values
+        if control_type == "position":
+            self._publish("position", commands)
+        elif control_type == "velocity":
+            self._publish("velocity", commands)
+        elif control_type == "effort":
+            self._publish("effort", commands)
+        elif control_type == "current":
+            self._publish("current", commands)
+        return
 
     def move_joints(
         self,
@@ -291,7 +339,7 @@ class RobotClient(ZenohSession):
         If the duration is set to 0, the joints will move in their maximum speed without interpolation.
 
         Args:
-            group (ControlGroup | list | str): The group of joints to move, or a list of joint indices.
+            group (ControlGroup | list | str): The group of joints to move, or a list of joint indices, or name of the joint group.
             positions (np.ndarray[float]): target joint position in degrees.
             duration (float, optional): Time duration in seconds. If set to 0, the joints will move in their maximum speed without interpolation. Defaults to 0.0.
             blocking (bool, optional): If True, block until the move is completed. Defaults to False.
@@ -321,7 +369,7 @@ class RobotClient(ZenohSession):
             return
 
         if duration == 0:
-            self._publish("positions", dest_pos)
+            self._publish("position", dest_pos)
             return
 
         def task():
@@ -335,7 +383,7 @@ class RobotClient(ZenohSession):
                 start_time = time.time()
                 while not (trajectory.finished(t := time.time() - start_time) or self._abort_event.is_set()):
                     pos = trajectory.at(t)
-                    self._publish("positions", pos)
+                    self._publish("position", pos)
                     time.sleep(1 / self.freq)
 
             self._abort_event.clear()
@@ -347,9 +395,102 @@ class RobotClient(ZenohSession):
         else:
             task()
 
-    def abort(self):
-        self._abort_event.set()
-        self._update_pos()  # TODO:  test this
+    def forward_kinematics(self, chain_names: list[str], q: np.ndarray | None = None):
+        """Get the end effector pose of the specified chains.
+
+        Args:
+            chain_names (list[str]): The chains to get the end effector pose of. Available chain names: 'head', 'left_arm', 'right_arm'.
+            q (np.ndarray, optional): The robot confiuration to do forward kinematics in. Defaults to None.
+
+        Returns:
+            list: The end effector pose of the specified chains.
+        """
+
+        res = self._call_service_wait(
+            "forward_kinematics",
+            value=Serde.pack({"chain_names": chain_names, "q": q}),
+            timeout=0.1,
+        )
+        return res
+
+    def inverse_kinematics(self, chain_names: list[str], targets: list[np.ndarray], dt: float, degrees=True):
+        """Get the joint positions for the specified chains to reach the target pose.
+
+        Args:
+            chain_names (list[str]): The chains to get the joint positions for. Available chain names: 'head', 'left_arm', 'right_arm'.
+            targets (list[np.ndarray]): The target poses.
+            dt (float): The time step for the inverse kinematics.
+
+        Returns:
+            np.ndarray: The joint positions to reach the target pose.
+        """
+
+        res = self._call_service_wait(
+            "inverse_kinematics",
+            value=Serde.pack({"chain_names": chain_names, "targets": targets, "dt": dt}),
+            timeout=0.1,
+        )
+
+        if res is not None and degrees:
+            res = np.rad2deg(res)
+        return res
+
+    def get_transform(self, target_frame: str, source_frame: str, q: np.ndarray | None = None):
+        """Get the transformation matrix between two frames in configuration `q`. If `q` is None, the current joint positions are used.
+
+        Args:
+            target_frame (str): Name of the frame to get the pose of.
+            source_frame (str): Name of the frame to get the pose in.
+            q (np.ndarray, optional): The robot confiuration to do forward kinematics in. Defaults to None.
+
+        Returns:
+            np.ndarray: The transformation matrix.
+        """
+
+        res = self._call_service_wait(
+            f"tf/{source_frame}/{target_frame}",
+            value=Serde.pack(q) if q is not None else None,
+            timeout=1.0,
+        )
+        return np.array(res)
+
+    def list_frames(self):
+        """List all available frames."""
+
+        res = self._call_service_wait(
+            "tf/list",
+            timeout=1.0,
+        )
+        return res
+
+    def _update_pos(self):
+        """Update the joint positions command to the measured values.
+
+        This is useful when the robot is moved manually and the joint positions are not updated.
+        """
+        # silently ignore if the robot is moving
+        if self._move_lock.locked():
+            return
+        self._publish("position", self.states["joint"]["position"])
+
+    def liveness_check(self):
+        """Check if the robot server is alive."""
+
+        info = self._call_service_wait("robot/info", timeout=1.0)
+        if info is None:
+            raise FourierConnectionError(
+                "Failed to connect to the robot server.  Please make sure the server is running."
+            )
+
+    def reboot(self):
+        """Reboot the motors."""
+
+        self._call_service_wait("control/reboot", timeout=10.0)
+        self._update_pos()
+        time.sleep(0.1)
+        self._update_pos()
+        time.sleep(0.1)
+        self._update_pos()
 
     def play_traj(self, traj: list[np.ndarray], timestamps: list[float] | None = None):
         """Play a trajectory in joint space."""
@@ -369,7 +510,7 @@ class RobotClient(ZenohSession):
                     if self._abort_event.is_set():
                         self._abort_event.clear()
                         break
-                    self._publish("positions", pos)
+                    self._publish("position", pos)
                     time.sleep(1 / self.freq)
             return
 
@@ -385,9 +526,13 @@ class RobotClient(ZenohSession):
                     self._abort_event.clear()
                     break
                 # self.move_joints(ControlGroup.ALL, pos, t - (time.time() - start_time))
-                self._publish("positions", pos)
+                self._publish("position", pos)
                 if sleep_time := (t - t0) - (time.time() - start_time) > 0:
                     time.sleep(sleep_time)
+
+    def abort(self):
+        self._abort_event.set()
+        self._update_pos()  # TODO:  test this
 
     def close(self):
         if self.server_connected:

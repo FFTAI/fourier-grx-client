@@ -27,23 +27,6 @@ $ grx [OPTIONS] COMMAND [ARGS]...
 * `run`: Run the robot server.
 * `states`: Print the current robot states.
 
-## `grx calibrate`
-
-Calibrate the robot sensors and save the offsets to a file
-
-**Usage**:
-
-```console
-$ grx calibrate [OPTIONS] [OUTPUT_PATH]
-```
-
-**Arguments**:
-
-* `[OUTPUT_PATH]`: Path to the output file  [default: sensor_offsets.json]
-
-**Options**:
-
-* `--help`: Show this message and exit.
 
 ## `grx run`
 
@@ -61,10 +44,9 @@ $ grx run [OPTIONS] CONFIG
 
 **Options**:
 
-* `--urdf-path TEXT`: Path to the urdf file  [default: ./urdf]
+* `--namespace TEXT`: Namespace for the robot
 * `--freq INTEGER`: Main loop frequency in hz. defaults to 400hz.  [default: 400]
 * `--verbose / --no-verbose`: Print internal debug info  [default: verbose]
-* `--visualize / --no-visualize`: Visualize the robot in rviz  [default: no-visualize]
 * `--help`: Show this message and exit.
 
 ## `grx states`
@@ -76,6 +58,25 @@ Print the current robot states.
 ```console
 $ grx states [OPTIONS]
 ```
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+
+## `grx calibrate`
+
+Calibrate the robot sensors and save the offsets to a file
+
+**Usage**:
+
+```console
+$ grx calibrate [OPTIONS] [OUTPUT_PATH]
+```
+
+**Arguments**:
+
+* `[OUTPUT_PATH]`: Path to the output file  [default: sensor_offsets.json]
 
 **Options**:
 
@@ -122,5 +123,4 @@ $ grx generate-sensor-offset [OPTIONS]
 **Options**:
 
 * `--help`: Show this message and exit.
-
 
