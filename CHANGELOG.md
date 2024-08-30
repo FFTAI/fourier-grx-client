@@ -1,3 +1,11 @@
+## Release v0.2.0 (Unreleased)
+
+### 🚀 Features
+
+- Robot namespace support
+- `control_joints` API in velocity mode and current mode
+- forward kinematcs and inverse kinematics API
+
 ## Release v0.1.0 (2024-08-30)
 
 ### 🚀 Features
