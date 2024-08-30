@@ -10,6 +10,8 @@ m.patch()
 
 
 class ControlMode(IntEnum):
+    """Control mode enumeration."""
+
     NONE = 0x00
     CURRENT = 0x01
     EFFORT = 0x02
@@ -20,6 +22,8 @@ class ControlMode(IntEnum):
 
 
 class ControlGroup(tuple, Enum):
+    """Control group enumeration. Each group is a tuple of (start, num_joints). Available groups are: ALL, LEFT_LEG, RIGHT_LEG, WAIST, HEAD, LEFT_ARM, RIGHT_ARM, LOWER, UPPER, UPPER_EXTENDED."""
+
     ALL = (0, 32)
     LEFT_LEG = (0, 6)
     RIGHT_LEG = (6, 6)
@@ -38,6 +42,10 @@ class ControlGroup(tuple, Enum):
     @property
     def num_joints(self):
         return self.value[1]
+
+    @classmethod
+    def from_string(cls, s: str):
+        return getattr(cls, s.upper())
 
 
 class Serde:

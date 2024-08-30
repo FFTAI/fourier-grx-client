@@ -283,6 +283,7 @@ class RobotClient(ZenohSession):
         group: ControlGroup | list | str,
         positions: np.ndarray | list,
         duration: float = 0.0,
+        degrees: bool = True,
         blocking: bool = False,
     ):
         """Move in joint space with time duration.
@@ -290,14 +291,32 @@ class RobotClient(ZenohSession):
         Move in joint space with time duration in a separate thread. Can be aborted using `abort()`. Can be blocking.
         If the duration is set to 0, the joints will move in their maximum speed without interpolation.
 
+        ???+ info "Joint Order"
+            The joints order is as follows:
+                0: l_hip_roll, 1: l_hip_yaw, 2: l_hip_pitch, 3: l_knee_pitch, 4: l_ankle_pitch, 5: l_ankle_roll, 6: r_hip_roll, 7: r_hip_yaw, 8: r_hip_pitch, 9: r_knee_pitch, 10: r_ankle_pitch, 11: r_ankle_roll, 12: joint_waist_yaw, 13: joint_waist_pitch, 14: joint_waist_roll, 15: joint_head_pitch, 16: joint_head_roll, 17: joint_head_yaw, 18: l_shoulder_pitch, 19: l_shoulder_roll, 20: l_shoulder_yaw, 21: l_elbow_pitch, 22: l_wrist_yaw, 23: l_wrist_roll, 24: l_wrist_pitch, 25: r_shoulder_pitch, 26: r_shoulder_roll, 27: r_shoulder_yaw, 28: r_elbow_pitch, 29: r_wrist_yaw, 30: r_wrist_roll, 31: r_wrist_pitch
+
+        Example:
+
+            >>> # Move the left arm to a specific position
+            >>> r.move_joints("left_arm", [0, 0, 0, 20, 0, 0, 0], degrees=True)
+
+            >>> # or use the ControlGroup enum
+            >>> r.move_joints(ControlGroup.LEFT_ARM, [0, 0, 0, 20, 0, 0, 0], degrees=True)
+
+            >>> # or use indices, with radians instead of degrees
+            >>> r.move_joints([23, 24], [0.17, 0.17], degrees=False)
+
         Args:
-            group (ControlGroup | list | str): The group of joints to move, or a list of joint indices.
+            group (ControlGroup | list | str): The group of joints to move, specified by a string or a ControlGroup enum, or a list of joint indices.
             positions (np.ndarray[float]): target joint position in degrees.
             duration (float, optional): Time duration in seconds. If set to 0, the joints will move in their maximum speed without interpolation. Defaults to 0.0.
+            degrees (bool, optional): Whether the joint positions are in degrees. Defaults to True.
             blocking (bool, optional): If True, block until the move is completed. Defaults to False.
         """
-
-        positions = np.asarray(positions)
+        if not degrees:
+            positions = np.rad2deg(positions)
+        else:
+            positions = np.asarray(positions)
         dest_pos = self.joint_positions.copy()
 
         if isinstance(group, ControlGroup):

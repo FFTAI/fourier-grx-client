@@ -1,3 +1,10 @@
+## Release v0.1.4 (2024-08-30)
+
+### 💪 Enhancements
+
+- Add `degrees` option to `move_joints`
+- Better documentation for `move_joints`
+
 ## Release v0.1.3 (2024-08-30)
 
 ### 💪 Enhancements
