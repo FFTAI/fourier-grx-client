@@ -1,4 +1,4 @@
-## Release v0.1.2 (2024-08-30)
+## Release v0.1.3 (2024-08-30)
 
 ### 💪 Enhancements
 
