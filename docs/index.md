@@ -20,3 +20,11 @@ Run:
 ```bash
 pip install fourier-grx-client==0.1.2
 ```
+
+## Usage
+
+First make sure you know the IP address of the robot server and the namespace it is running on. Then you can create a client object like this:
+```python
+from fourier_grx_client.client import RobotClient
+r = RobotClient(namespace="gr/my_awesome_robot", server_ip="192.168.6.6")
+```

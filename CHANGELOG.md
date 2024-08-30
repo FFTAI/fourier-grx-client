@@ -10,6 +10,7 @@
 
 - Fix typo in `RobotClient`
 - Allow multicast for compatibility
+
 ## Release v0.1.0 (2024-08-30)
 
 ### 🚀 Features
