@@ -1,5 +1,11 @@
 ## Release v0.1.2 (2024-08-30)
 
+### 💪 Enhancements
+
+- Explicitly define exports in `__init__.py`
+
+## Release v0.1.2 (2024-08-30)
+
 ### 🚀 Features
 
 - Support `fourier-grx` version `v0.1.1-rc.6`
