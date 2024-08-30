@@ -33,8 +33,8 @@ class RobotClient(ZenohSession):
     """Client class for GR series robots.
     Example:
 
-        >>> from fourier_grx_client import RobotClient
-        >>> r = RobotClient()
+        >>> from fourier_grx_client import *
+        >>> r = RobotClient(namespace="gr/my_awesome_robot", server_ip="192.168.6.6")
     """
 
     default_positions = DEFAULT_POSITIONS
