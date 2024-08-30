@@ -1,4 +1,4 @@
-site_name: PDM
+site_name: Fourier GRX Client
 
 repo_url: https://github.com/FFTAI/fourier-grx-client
 edit_uri: edit/main/docs
@@ -23,8 +23,8 @@ theme:
   font:
     text: Open Sans
     code: Fira Code
-  logo: assets/logo.svg
-  favicon: assets/logo.svg
+  logo: assets/logo.png
+  favicon: assets/logo.png
   features:
     - content.code.copy
     - navigation.tabs

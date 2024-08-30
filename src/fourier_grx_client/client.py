@@ -37,10 +37,16 @@ class RobotClient(ZenohSession):
     """
 
     default_positions = DEFAULT_POSITIONS
-    default_group_positions = {group: DEFAULT_POSITIONS[group.slice].copy() for group in ControlGroup}
+    default_group_positions = {
+        group: DEFAULT_POSITIONS[group.slice].copy() for group in ControlGroup
+    }
 
     def __init__(
-        self, freq: int = 400, namespace: str | None = None, server_ip: str = "localhost", verbose: bool = False
+        self,
+        freq: int = 400,
+        namespace: str | None = None,
+        server_ip: str = "localhost",
+        verbose: bool = False,
     ):
         """The client class for GR series robots.
 
@@ -76,7 +82,9 @@ class RobotClient(ZenohSession):
         # -------------------------
 
         zenoh_config = zenoh.Config()
-        zenoh_config.insert_json5(zenoh.config.CONNECT_KEY, json.dumps([f"tcp/{server_ip}:7447"]))
+        zenoh_config.insert_json5(
+            zenoh.config.CONNECT_KEY, json.dumps([f"tcp/{server_ip}:7447"])
+        )
         zenoh_config.insert_json5("scouting/multicast/enabled", "false")
         zenoh_config.insert_json5("scouting/gossip/enabled", "false")
 
@@ -253,7 +261,9 @@ class RobotClient(ZenohSession):
         )
         return res
 
-    def set_control_modes(self, control_mode: ControlMode | list[ControlMode] | None = None):
+    def set_control_modes(
+        self, control_mode: ControlMode | list[ControlMode] | None = None
+    ):
         """Set the control modes for all joints.
 
         Args:
@@ -285,11 +295,20 @@ class RobotClient(ZenohSession):
         pd_control_kd: list[float] | None = None,
     ):
         gains = {}
-        if position_control_kp is not None and len(position_control_kp) == self.number_of_joint:
+        if (
+            position_control_kp is not None
+            and len(position_control_kp) == self.number_of_joint
+        ):
             gains["position_control_kp"] = position_control_kp
-        if velocity_control_kp is not None and len(velocity_control_kp) == self.number_of_joint:
+        if (
+            velocity_control_kp is not None
+            and len(velocity_control_kp) == self.number_of_joint
+        ):
             gains["velocity_control_kp"] = velocity_control_kp
-        if velocity_control_ki is not None and len(velocity_control_ki) == self.number_of_joint:
+        if (
+            velocity_control_ki is not None
+            and len(velocity_control_ki) == self.number_of_joint
+        ):
             gains["velocity_control_ki"] = velocity_control_ki
         if pd_control_kp is not None and len(pd_control_kp) == self.number_of_joint:
             gains["pd_control_kp"] = pd_control_kp
@@ -350,11 +369,15 @@ class RobotClient(ZenohSession):
 
         if isinstance(group, ControlGroup):
             if positions.shape != (group.num_joints,):
-                raise ValueError(f"Invalid joint position shape: {positions.shape}, expected: {(group.num_joints,)}")
+                raise ValueError(
+                    f"Invalid joint position shape: {positions.shape}, expected: {(group.num_joints,)}"
+                )
             dest_pos[group.slice] = positions
         elif isinstance(group, list):
             if len(group) != len(positions):
-                raise ValueError(f"Invalid joint position shape: {positions.shape}, expected: {(len(group),)}")
+                raise ValueError(
+                    f"Invalid joint position shape: {positions.shape}, expected: {(len(group),)}"
+                )
             dest_pos[group] = positions
         elif isinstance(group, str):
             try:
@@ -381,7 +404,10 @@ class RobotClient(ZenohSession):
                 )
 
                 start_time = time.time()
-                while not (trajectory.finished(t := time.time() - start_time) or self._abort_event.is_set()):
+                while not (
+                    trajectory.finished(t := time.time() - start_time)
+                    or self._abort_event.is_set()
+                ):
                     pos = trajectory.at(t)
                     self._publish("position", pos)
                     time.sleep(1 / self.freq)
@@ -413,7 +439,9 @@ class RobotClient(ZenohSession):
         )
         return res
 
-    def inverse_kinematics(self, chain_names: list[str], targets: list[np.ndarray], dt: float, degrees=True):
+    def inverse_kinematics(
+        self, chain_names: list[str], targets: list[np.ndarray], dt: float, degrees=True
+    ):
         """Get the joint positions for the specified chains to reach the target pose.
 
         Args:
@@ -427,7 +455,9 @@ class RobotClient(ZenohSession):
 
         res = self._call_service_wait(
             "inverse_kinematics",
-            value=Serde.pack({"chain_names": chain_names, "targets": targets, "dt": dt}),
+            value=Serde.pack(
+                {"chain_names": chain_names, "targets": targets, "dt": dt}
+            ),
             timeout=0.1,
         )
 
@@ -435,7 +465,9 @@ class RobotClient(ZenohSession):
             res = np.rad2deg(res)
         return res
 
-    def get_transform(self, target_frame: str, source_frame: str, q: np.ndarray | None = None):
+    def get_transform(
+        self, target_frame: str, source_frame: str, q: np.ndarray | None = None
+    ):
         """Get the transformation matrix between two frames in configuration `q`. If `q` is None, the current joint positions are used.
 
         Args:
