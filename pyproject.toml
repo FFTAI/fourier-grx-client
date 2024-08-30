@@ -26,6 +26,8 @@ distribution = true
 [tool.pdm.scripts]
 doc = { cmd = "mkdocs serve", help = "Start the dev server for docs preview" }
 lint = "pre-commit run --all-files"
+publish = "pdm publish -v -u __token__"
+publish_doc = "mike deploy --push --update-aliases"
 
 [[tool.pdm.source]]
 url = "https://pypi.tuna.tsinghua.edu.cn/simple"
