@@ -557,25 +557,12 @@
 </ul>
 <p><strong>Commands</strong>:</p>
 <ul>
+<li><code>run</code>: Run the robot server.</li>
+<li><code>states</code>: Print the current robot states.</li>
 <li><code>calibrate</code>: Calibrate the robot sensors and save the...</li>
 <li><code>disable</code>: Disable all the motors.</li>
 <li><code>enable</code>: Enable all the motors.</li>
 <li><code>generate-sensor-offset</code>: Generate sensor offset file from the...</li>
-<li><code>run</code>: Run the robot server.</li>
-<li><code>states</code>: Print the current robot states.</li>
-</ul>
-<h2 id="grx-calibrate"><code>grx calibrate</code><a class="headerlink" href="#grx-calibrate" title="Permanent link">#</a></h2>
-<p>Calibrate the robot sensors and save the offsets to a file</p>
-<p><strong>Usage</strong>:</p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="gp">$ </span>grx<span class="w"> </span>calibrate<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span><span class="o">[</span>OUTPUT_PATH<span class="o">]</span>
-</code></pre></div></td></tr></table></div>
-<p><strong>Arguments</strong>:</p>
-<ul>
-<li><code>[OUTPUT_PATH]</code>: Path to the output file  [default: sensor_offsets.json]</li>
-</ul>
-<p><strong>Options</strong>:</p>
-<ul>
-<li><code>--help</code>: Show this message and exit.</li>
 </ul>
 <h2 id="grx-run"><code>grx run</code><a class="headerlink" href="#grx-run" title="Permanent link">#</a></h2>
 <p>Run the robot server.</p>
@@ -588,6 +575,7 @@
 </ul>
 <p><strong>Options</strong>:</p>
 <ul>
+<li><code>--namespace TEXT</code>: Namespace for the robot  [default: gr]</li>
 <li><code>--urdf-path TEXT</code>: Path to the urdf file  [default: ./urdf]</li>
 <li><code>--freq INTEGER</code>: Main loop frequency in hz. defaults to 400hz.  [default: 400]</li>
 <li><code>--verbose / --no-verbose</code>: Print internal debug info  [default: verbose]</li>
@@ -599,6 +587,19 @@
 <p><strong>Usage</strong>:</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="gp">$ </span>grx<span class="w"> </span>states<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
 </code></pre></div></td></tr></table></div>
+<p><strong>Options</strong>:</p>
+<ul>
+<li><code>--help</code>: Show this message and exit.</li>
+</ul>
+<h2 id="grx-calibrate"><code>grx calibrate</code><a class="headerlink" href="#grx-calibrate" title="Permanent link">#</a></h2>
+<p>Calibrate the robot sensors and save the offsets to a file</p>
+<p><strong>Usage</strong>:</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="gp">$ </span>grx<span class="w"> </span>calibrate<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span><span class="o">[</span>OUTPUT_PATH<span class="o">]</span>
+</code></pre></div></td></tr></table></div>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>[OUTPUT_PATH]</code>: Path to the output file  [default: sensor_offsets.json]</li>
+</ul>
 <p><strong>Options</strong>:</p>
 <ul>
 <li><code>--help</code>: Show this message and exit.</li>
