@@ -17,8 +17,8 @@ from rich.progress import track
 
 from .constants import DEFAULT_POSITIONS
 from .exceptions import FourierConnectionError, FourierValueError
-from .utils import ControlGroup, ControlMode, Serde, Trajectory
-from .zenoh import ZenohSession
+from .utils import ControlGroup, Serde, Trajectory, ControlMode
+from .zenoh_utils import ZenohSession
 
 m.patch()
 
@@ -345,82 +345,6 @@ class RobotClient(ZenohSession):
             self._publish("current", commands)
         return
 
-    def move_joints(
-        self,
-        group: ControlGroup | list | str,
-        positions: np.ndarray | list,
-        duration: float = 0.0,
-        blocking: bool = False,
-    ):
-        """Move in joint space with time duration.
-
-        Move in joint space with time duration in a separate thread. Can be aborted using `abort()`. Can be blocking.
-        If the duration is set to 0, the joints will move in their maximum speed without interpolation.
-
-        Args:
-            group (ControlGroup | list | str): The group of joints to move, or a list of joint indices, or name of the joint group.
-            positions (np.ndarray[float]): target joint position in degrees.
-            duration (float, optional): Time duration in seconds. If set to 0, the joints will move in their maximum speed without interpolation. Defaults to 0.0.
-            blocking (bool, optional): If True, block until the move is completed. Defaults to False.
-        """
-
-        positions = np.asarray(positions)
-        dest_pos = self.joint_positions.copy()
-
-        if isinstance(group, ControlGroup):
-            if positions.shape != (group.num_joints,):
-                raise ValueError(
-                    f"Invalid joint position shape: {positions.shape}, expected: {(group.num_joints,)}"
-                )
-            dest_pos[group.slice] = positions
-        elif isinstance(group, list):
-            if len(group) != len(positions):
-                raise ValueError(
-                    f"Invalid joint position shape: {positions.shape}, expected: {(len(group),)}"
-                )
-            dest_pos[group] = positions
-        elif isinstance(group, str):
-            try:
-                dest_pos[ControlGroup[group.upper()].slice] = positions
-            except KeyError as ex:
-                raise FourierValueError(f"Unknown group name: {group}") from ex
-
-        # TODO: automatic interpolation
-
-        if self.is_moving:
-            logger.warning("Move already in progress, abort.")
-            return
-
-        if duration == 0:
-            self._publish("position", dest_pos)
-            return
-
-        def task():
-            with self._move_lock:
-                trajectory = Trajectory(
-                    start=self.joint_positions,
-                    end=dest_pos,
-                    duration=duration,
-                )
-
-                start_time = time.time()
-                while not (
-                    trajectory.finished(t := time.time() - start_time)
-                    or self._abort_event.is_set()
-                ):
-                    pos = trajectory.at(t)
-                    self._publish("position", pos)
-                    time.sleep(1 / self.freq)
-
-            self._abort_event.clear()
-
-        if not blocking:
-            thread = threading.Thread(name="RobotClient.move_joints", target=task)
-            thread.daemon = True
-            thread.start()
-        else:
-            task()
-
     def forward_kinematics(self, chain_names: list[str], q: np.ndarray | None = None):
         """Get the end effector pose of the specified chains.
 
@@ -495,16 +419,6 @@ class RobotClient(ZenohSession):
         )
         return res
 
-    def _update_pos(self):
-        """Update the joint positions command to the measured values.
-
-        This is useful when the robot is moved manually and the joint positions are not updated.
-        """
-        # silently ignore if the robot is moving
-        if self._move_lock.locked():
-            return
-        self._publish("position", self.states["joint"]["position"])
-
     def liveness_check(self):
         """Check if the robot server is alive."""
 
@@ -523,6 +437,115 @@ class RobotClient(ZenohSession):
         self._update_pos()
         time.sleep(0.1)
         self._update_pos()
+
+    def _update_pos(self):
+        """Update the joint positions command to the measured values.
+
+        This is useful when the robot is moved manually and the joint positions are not updated.
+        """
+        # silently ignore if the robot is moving
+        if self._move_lock.locked():
+            return
+        self._publish("positions", self.states["joint"]["position"])
+
+    def move_joints(
+        self,
+        group: ControlGroup | list | str,
+        positions: np.ndarray | list,
+        duration: float = 0.0,
+        degrees: bool = True,
+        blocking: bool = False,
+    ):
+        """Move in joint space with time duration.
+
+        Move in joint space with time duration in a separate thread. Can be aborted using `abort()`. Can be blocking.
+        If the duration is set to 0, the joints will move in their maximum speed without interpolation.
+
+        ???+ info "Joint Order"
+            The joints order is as follows:
+                0: l_hip_roll, 1: l_hip_yaw, 2: l_hip_pitch, 3: l_knee_pitch, 4: l_ankle_pitch, 5: l_ankle_roll, 6: r_hip_roll, 7: r_hip_yaw, 8: r_hip_pitch, 9: r_knee_pitch, 10: r_ankle_pitch, 11: r_ankle_roll, 12: joint_waist_yaw, 13: joint_waist_pitch, 14: joint_waist_roll, 15: joint_head_pitch, 16: joint_head_roll, 17: joint_head_yaw, 18: l_shoulder_pitch, 19: l_shoulder_roll, 20: l_shoulder_yaw, 21: l_elbow_pitch, 22: l_wrist_yaw, 23: l_wrist_roll, 24: l_wrist_pitch, 25: r_shoulder_pitch, 26: r_shoulder_roll, 27: r_shoulder_yaw, 28: r_elbow_pitch, 29: r_wrist_yaw, 30: r_wrist_roll, 31: r_wrist_pitch
+
+        Example:
+
+            >>> # Move the left arm to a specific position
+            >>> r.move_joints("left_arm", [0, 0, 0, 20, 0, 0, 0], degrees=True)
+
+            >>> # or use the ControlGroup enum
+            >>> r.move_joints(ControlGroup.LEFT_ARM, [0, 0, 0, 20, 0, 0, 0], degrees=True)
+
+            >>> # or use indices, with radians instead of degrees
+            >>> r.move_joints([23, 24], [0.17, 0.17], degrees=False)
+
+        Args:
+            group (ControlGroup | list | str): The group of joints to move, specified by a string or a ControlGroup enum, or a list of joint indices.
+            positions (np.ndarray[float]): target joint position in degrees.
+            duration (float, optional): Time duration in seconds. If set to 0, the joints will move in their maximum speed without interpolation. Defaults to 0.0.
+            degrees (bool, optional): Whether the joint positions are in degrees. Defaults to True.
+            blocking (bool, optional): If True, block until the move is completed. Defaults to False.
+        """
+        if not degrees:
+            positions = np.rad2deg(positions)
+        else:
+            positions = np.asarray(positions)
+        dest_pos = self.joint_positions.copy()
+
+        if isinstance(group, ControlGroup):
+            if positions.shape != (group.num_joints,):
+                raise ValueError(
+                    f"Invalid joint position shape: {positions.shape}, expected: {(group.num_joints,)}"
+                )
+            dest_pos[group.slice] = positions
+        elif isinstance(group, list):
+            if len(group) != len(positions):
+                raise ValueError(
+                    f"Invalid joint position shape: {positions.shape}, expected: {(len(group),)}"
+                )
+            dest_pos[group] = positions
+        elif isinstance(group, str):
+            try:
+                dest_pos[ControlGroup[group.upper()].slice] = positions
+            except KeyError as ex:
+                raise FourierValueError(f"Unknown group name: {group}") from ex
+
+        # TODO: automatic interpolation
+
+        if self.is_moving:
+            logger.warning("Move already in progress, abort.")
+            return
+
+        if duration == 0:
+            self._publish("positions", dest_pos)
+            return
+
+        def task():
+            with self._move_lock:
+                trajectory = Trajectory(
+                    start=self.joint_positions,
+                    end=dest_pos,
+                    duration=duration,
+                )
+
+                start_time = time.time()
+                while not (
+                    trajectory.finished(t := time.time() - start_time)
+                    or self._abort_event.is_set()
+                ):
+                    pos = trajectory.at(t)
+                    self._publish("positions", pos)
+                    time.sleep(1 / self.freq)
+
+            self._abort_event.clear()
+
+        if not blocking:
+            thread = threading.Thread(name="RobotClient.move_joints", target=task)
+            thread.daemon = True
+            thread.start()
+        else:
+            task()
+
+    def abort(self):
+        self._abort_event.set()
+        self._update_pos()  # TODO:  test this
 
     def play_traj(self, traj: list[np.ndarray], timestamps: list[float] | None = None):
         """Play a trajectory in joint space."""
@@ -561,10 +584,6 @@ class RobotClient(ZenohSession):
                 self._publish("position", pos)
                 if sleep_time := (t - t0) - (time.time() - start_time) > 0:
                     time.sleep(sleep_time)
-
-    def abort(self):
-        self._abort_event.set()
-        self._update_pos()  # TODO:  test this
 
     def close(self):
         if self.server_connected:

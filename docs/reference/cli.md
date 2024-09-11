@@ -20,6 +20,8 @@ $ grx [OPTIONS] COMMAND [ARGS]...
 
 **Commands**:
 
+* `run`: Run the robot server.
+* `states`: Print the current robot states.
 * `calibrate`: Calibrate the robot sensors and save the...
 * `disable`: Disable all the motors.
 * `enable`: Enable all the motors.
@@ -45,6 +47,8 @@ $ grx run [OPTIONS] CONFIG
 **Options**:
 
 * `--namespace TEXT`: Namespace for the robot
+* `--namespace TEXT`: Namespace for the robot  [default: gr]
+* `--urdf-path TEXT`: Path to the urdf file  [default: ./urdf]
 * `--freq INTEGER`: Main loop frequency in hz. defaults to 400hz.  [default: 400]
 * `--verbose / --no-verbose`: Print internal debug info  [default: verbose]
 * `--help`: Show this message and exit.
@@ -62,7 +66,6 @@ $ grx states [OPTIONS]
 **Options**:
 
 * `--help`: Show this message and exit.
-
 
 ## `grx calibrate`
 

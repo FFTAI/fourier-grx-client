@@ -6,6 +6,19 @@
 - `control_joints` API in velocity mode and current mode
 - forward kinematcs and inverse kinematics API
 
+## Release v0.1.4 (2024-08-30)
+
+### 💪 Enhancements
+
+- Add `degrees` option to `move_joints`
+- Better documentation for `move_joints`
+
+## Release v0.1.3 (2024-08-30)
+
+### 💪 Enhancements
+
+- Explicitly define exports in `__init__.py`
+
 ## Release v0.1.2 (2024-08-30)
 
 ### 🚀 Features
