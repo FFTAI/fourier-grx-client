@@ -14,18 +14,20 @@ On the robot, install `fourier-grx==0.1.0rc6` following the instructions [here](
 
 ### On your local machine:
 
-#### Install from source
-
-```bash
-pip install -e .
-```
-
 #### Install from pypi
 
 Run:
 
 ```bash
 pip install fourier-grx-client==0.1.4
+```
+
+#### Install from source
+
+```bash
+git clone https://github.com/FFTAI/fourier-grx-client.git
+cd fourier-grx-client
+pip install -e .
 ```
 
 ## Usage
@@ -39,8 +41,8 @@ from fourier_grx_client import *
 r = RobotClient(namespace="gr/my_awesome_robot", server_ip="192.168.6.6")
 ```
 
-!!! tip
-    For more information on the API, see the [API Reference](docs/reference/api.md).
+> [!TIP]
+> For more information on the API, see the [API Reference](https://fftai.github.io/fourier-grx-client/latest/reference/api/).
 
 
 ## Development
@@ -51,7 +53,7 @@ r = RobotClient(namespace="gr/my_awesome_robot", server_ip="192.168.6.6")
 pip install pdm
 ```
 
-2. use `pdm` to install the package:
+2. use `pdm` to install the package and all development dependencies:
 
 ```bash
 pdm install -v -d
