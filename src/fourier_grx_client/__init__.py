@@ -1,3 +1,2 @@
-from .sdk import RobotClient, ControlGroup, ControlMode
-
-__all__ = ["RobotClient", "ControlGroup", "ControlMode"]
+from .client import RobotClient
+from .utils import ControlGroup
