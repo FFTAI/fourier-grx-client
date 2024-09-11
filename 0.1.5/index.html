@@ -749,8 +749,11 @@ The correponding server library can be found <a href="https://pypi.org/project/f
 pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
 </code></pre></div></td></tr></table></div>
 <h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">#</a></h2>
-<p>First make sure you know the IP address of the robot server and the namespace it is running on.
-Then you can create a client object like this:</p>
+<p>First make sure you know the IP address of the robot server and the namespace it is running on. Namespace is set by the <code>--namespace</code> flag when starting the robot server.</p>
+<p>On your robot: </p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>grx<span class="w"> </span>run<span class="w"> </span>./path/to/config.yaml<span class="w"> </span>--urdf-path<span class="w"> </span>./path/to/urdf_folder<span class="w"> </span>--namespace<span class="w"> </span>gr/my_awesome_robot
+</code></pre></div></td></tr></table></div>
+<p>Then on your local machine, you can create a client object like this:</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kn">from</span> <span class="nn">fourier_grx_client</span> <span class="kn">import</span> <span class="o">*</span>
