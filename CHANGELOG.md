@@ -1,3 +1,9 @@
+## Release v0.1.6 (Unreleased)
+
+### 💪 Enhancements
+
+- Add `py.typed` file to package
+
 ## Release v0.1.5 (2024-09-11)
 
 ### 💪 Enhancements
