@@ -17,7 +17,7 @@ from rich.progress import track
 from .constants import DEFAULT_POSITIONS
 from .exceptions import FourierConnectionError, FourierValueError
 from .utils import ControlGroup, Serde, Trajectory
-from .zenoh import ZenohSession
+from .zenoh_utils import ZenohSession
 
 m.patch()
 
