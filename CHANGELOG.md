@@ -1,3 +1,14 @@
+## Release v0.1.5 (2024-09-11)
+
+### 💪 Enhancements
+
+- Fortify service call handling in `ZenohSession`
+
+### 🐛 Bug Fixes
+
+- Rename `zenoh.py` to `zenoh_utils.py` to avoid name clashing
+
+
 ## Release v0.1.4 (2024-08-30)
 
 ### 💪 Enhancements

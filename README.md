@@ -6,7 +6,7 @@ The correponding server library can be found [here](https://pypi.org/project/fou
 ## Installation
 
 > [!IMPORTANT]
-> This software is highly unstable and subject to change at any time. Version 0.1.4 is only compatible with `fourier-grx` version `v0.1.1-rc.6`.
+> This software is highly unstable and subject to change at any time. Version 0.1.5 is only compatible with `fourier-grx` version `v0.1.1-rc.6`.
 
 ### On the robot
 
@@ -19,7 +19,7 @@ On the robot, install `fourier-grx==0.1.0rc6` following the instructions [here](
 Run:
 
 ```bash
-pip install fourier-grx-client==0.1.4
+pip install fourier-grx-client==0.1.5
 ```
 
 #### Install from source
