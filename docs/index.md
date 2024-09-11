@@ -32,8 +32,15 @@ pip install -e .
 
 ## Usage
 
-First make sure you know the IP address of the robot server and the namespace it is running on.
-Then you can create a client object like this:
+First make sure you know the IP address of the robot server and the namespace it is running on. Namespace is set by the `--namespace` flag when starting the robot server.
+
+On your robot: 
+
+```bash
+grx run ./path/to/config.yaml --urdf-path ./path/to/urdf_folder --namespace gr/my_awesome_robot
+```
+
+Then on your local machine, you can create a client object like this:
 
 ```python
 from fourier_grx_client import *
