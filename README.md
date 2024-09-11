@@ -16,16 +16,8 @@ On the robot, install `fourier-grx==0.1.0rc6` following the instructions [here](
 
 #### Install from source
 
-1. Install the `pdm` package manager:
-
 ```bash
-pip install pdm
-```
-
-2. use `pdm` to install the package:
-
-```bash
-pdm install
+pip install -e .
 ```
 
 #### Install from pypi
@@ -48,4 +40,19 @@ r = RobotClient(namespace="gr/my_awesome_robot", server_ip="192.168.6.6")
 ```
 
 !!! tip
-For more information on the API, see the [API Reference](reference/api.md).
+    For more information on the API, see the [API Reference](docs/reference/api.md).
+
+
+## Development
+
+1. Install the `pdm` package manager:
+
+```bash
+pip install pdm
+```
+
+2. use `pdm` to install the package:
+
+```bash
+pdm install -v -d
+```
