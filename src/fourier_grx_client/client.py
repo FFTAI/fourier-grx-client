@@ -24,7 +24,6 @@ m.patch()
 
 zenoh.init_logger()
 
-
 np.set_printoptions(precision=2, suppress=True)
 
 
@@ -454,7 +453,7 @@ class RobotClient(ZenohSession):
         positions: np.ndarray | list,
         duration: float = 0.0,
         degrees: bool = True,
-        blocking: bool = False,
+        blocking: bool = True,
     ):
         """Move in joint space with time duration.
 
@@ -481,7 +480,7 @@ class RobotClient(ZenohSession):
             positions (np.ndarray[float]): target joint position in degrees.
             duration (float, optional): Time duration in seconds. If set to 0, the joints will move in their maximum speed without interpolation. Defaults to 0.0.
             degrees (bool, optional): Whether the joint positions are in degrees. Defaults to True.
-            blocking (bool, optional): If True, block until the move is completed. Defaults to False.
+            blocking (bool, optional): If True, block until the move is completed. Defaults to True.
         """
         if not degrees:
             positions = np.rad2deg(positions)

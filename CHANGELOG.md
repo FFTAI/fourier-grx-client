@@ -5,6 +5,22 @@
 - Robot namespace support
 - `control_joints` API in velocity mode and current mode
 - forward kinematcs and inverse kinematics API
+## Release v0.1.6 (Unreleased)
+
+### 💪 Enhancements
+
+- Add `py.typed` file to package
+
+## Release v0.1.5 (2024-09-11)
+
+### 💪 Enhancements
+
+- Fortify service call handling in `ZenohSession`
+
+### 🐛 Bug Fixes
+
+- Rename `zenoh.py` to `zenoh_utils.py` to avoid name clashing
+
 
 ## Release v0.1.4 (2024-08-30)
 

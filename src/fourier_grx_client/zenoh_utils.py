@@ -17,8 +17,11 @@ def parse_reply(reply: zenoh.Reply) -> tuple[bool, Any]:
 
 
 class ZenohSession:
-    def __init__(self, prefix: str, config: zenoh.Config = zenoh.Config()):
+    def __init__(self, prefix: str, config: zenoh.Config | None = None):
         self.prefix = prefix
+
+        if config is None:
+            config = zenoh.Config()
         self.session: zenoh.Session = zenoh.open(config)
         self._publishers: dict[str, zenoh.Publisher] = {}
         self._subscribers: dict[str, zenoh.Subscriber] = {}
@@ -78,7 +81,6 @@ class ZenohSession:
         attachment: dict[str | bytes, Any] = {},
         timeout: float = 15.0,
     ):
-        # print(self._encode_topic(topic, parameters),self._encode_value(value),self._encode_attachment(attachment),)
         if self.session is None:
             logger.warning("Session is closed")
             return
@@ -90,13 +92,16 @@ class ZenohSession:
             timeout=timeout,
         )
         try:
+            # TODO: allow this to receive multiple replies
             reply = receiver.get(timeout)
-            # print(reply)
-        except TimeoutError as ex:
-            raise TimeoutError(f"Timeout waiting for {topic}") from ex
+        except TimeoutError:
+            logger.warning(f"Timeout waiting for reply from {topic}")
+            return None
         except StopIteration:
             logger.debug(f"No reply from {topic}")
             return None
+        finally:
+            receiver.close()
 
         try:
             # print(reply.ok.value.payload)
@@ -120,24 +125,23 @@ class ZenohSession:
             logger.debug(f"Error publishing to {topic}: {ex}")
 
     def close(self):
-        # print(self._publishers, self._subscribers, self._services)
         try:
+            logger.trace("Undecalare services")
             for q in self._services.values():
-                # print(f"Undecalare service {q.key_expr}")
                 q.undeclare()
+            logger.trace("Undecalare subscribers")
             for s in self._subscribers.values():
-                # print("Undecalare subscribers")
                 s.undeclare()
+            logger.trace("Undecalare publishers")
             for p in self._publishers.values():
-                # print(f"Undecalare publisher {p.key_expr}")
+                logger.trace(f"Undecalare publisher on topic: {p.key_expr}")
                 p.undeclare()
         except Exception as ex:
-            print(ex)
-            pass
+            logger.exception(ex)
         try:
             if self.session:
                 self.session.close()
-            self.session = None
+            self.session = None  # type: ignore
         except Exception:
             pass
 
