@@ -1,17 +1,12 @@
-import numpy
-import msgpack
-import msgpack_numpy
-
 from dataclasses import dataclass
 from enum import Enum, IntEnum
 from typing import Any
 
-msgpack_numpy.patch()
+import msgpack
+import msgpack_numpy as m
+import numpy as np
 
-
-class FunctionResult(IntEnum):
-    SUCCESS = 0
-    FAIL = -1
+m.patch()
 
 
 class ControlMode(IntEnum):
@@ -22,25 +17,6 @@ class ControlMode(IntEnum):
     POSITION = 0x04
     PD = 0x09
     OTHER = 0x0A
-
-
-class ControlConfig:
-    control_mode: ControlMode
-    position_control_kp = None
-    velocity_control_kp = None
-    velocity_control_ki = None
-    pd_control_kp = None
-    pd_control_kd = None
-
-    def to_dict(self):
-        return {
-            "control_mode": self.control_mode,
-            "position_control_kp": self.position_control_kp,
-            "velocity_control_kp": self.velocity_control_kp,
-            "velocity_control_ki": self.velocity_control_ki,
-            "pd_control_kp": self.pd_control_kp,
-            "pd_control_kd": self.pd_control_kd,
-        }
 
 
 class ControlGroup(tuple, Enum):
@@ -81,8 +57,8 @@ class ServiceStatus(str, Enum):
 
 @dataclass
 class Trajectory:
-    start: numpy.ndarray
-    end: numpy.ndarray
+    start: np.ndarray
+    end: np.ndarray
     duration: float
 
     def at(self, t: float):

@@ -4,9 +4,9 @@ from collections.abc import Callable
 from typing import Any
 
 import zenoh
+from loguru import logger
 
 from .utils import Serde
-from .logger import Logger
 
 
 def parse_reply(reply: zenoh.Reply) -> tuple[bool, Any]:
@@ -45,21 +45,21 @@ class ZenohSession:
         return f"{self.prefix}/{topic}"
 
     def _call_service(
-            self,
-            topic: str,
-            value: Any | None = None,
-            parameters: dict[str, Any] = {},
-            attachment: dict[str | bytes, str | bytes] = {},
-            timeout: float = 1.0,
-            callback: Callable[[zenoh.Reply], Any] | None = None,
+        self,
+        topic: str,
+        value: Any | None = None,
+        parameters: dict[str, Any] = {},
+        attachment: dict[str | bytes, str | bytes] = {},
+        timeout: float = 1.0,
+        callback: Callable[[zenoh.Reply], Any] | None = None,
     ):
         def _callback(reply: zenoh.Reply):
             try:
                 res = Serde.unpack(reply.ok.value.payload)
-                Logger().print_debug(f"{topic}: {res}")
+                logger.debug(f"{topic}: {res}")
             except Exception:
                 # TODO: handle error
-                Logger().print_error(f"{topic}: {reply.err.payload.decode()}")
+                logger.error(f"{topic}: {reply.err.payload.decode()}")
 
         self.session.get(
             self._encode_topic(topic, parameters),
@@ -71,16 +71,16 @@ class ZenohSession:
         return
 
     def _call_service_wait(
-            self,
-            topic: str,
-            value: Any | None = None,
-            parameters: dict[str, Any] = {},
-            attachment: dict[str | bytes, Any] = {},
-            timeout: float = 15.0,
+        self,
+        topic: str,
+        value: Any | None = None,
+        parameters: dict[str, Any] = {},
+        attachment: dict[str | bytes, Any] = {},
+        timeout: float = 15.0,
     ):
         # print(self._encode_topic(topic, parameters),self._encode_value(value),self._encode_attachment(attachment),)
         if self.session is None:
-            Logger().print_warning("Session is closed")
+            logger.warning("Session is closed")
             return
         receiver = self.session.get(
             self._encode_topic(topic, parameters),
@@ -95,29 +95,29 @@ class ZenohSession:
         except TimeoutError as ex:
             raise TimeoutError(f"Timeout waiting for {topic}") from ex
         except StopIteration:
-            Logger().print_debug(f"No reply from {topic}")
+            logger.debug(f"No reply from {topic}")
             return None
 
         try:
             # print(reply.ok.value.payload)
             res = Serde.unpack(reply.ok.value.payload)
-            Logger().print_debug(f"{topic} ({value}): {res}")
+            logger.debug(f"{topic} ({value}): {res}")
             return res
         except Exception:
             err_msg = reply.err.payload.decode()
-            Logger().print_error(f"{topic} ({value}): {err_msg}")
+            logger.error(f"{topic} ({value}): {err_msg}")
             return None
 
     def _publish(self, topic: str, value: Any, attachment: dict[str | bytes, Any] = {}):
         if topic not in self._publishers:
             raise ValueError(f"Unknown topic: {topic}")
         if self._publishers[topic] is None:
-            Logger().print_warning(f"Publisher {topic} is None")
+            logger.warning(f"Publisher {topic} is None")
             return
         try:
             self._publishers[topic].put(self._encode_value(value), attachment=self._encode_attachment(attachment))
         except Exception as ex:
-            Logger().print_debug(f"Error publishing to {topic}: {ex}")
+            logger.debug(f"Error publishing to {topic}: {ex}")
 
     def close(self):
         # print(self._publishers, self._subscribers, self._services)
