@@ -6,7 +6,7 @@ The correponding server library can be found [here](https://pypi.org/project/fou
 ## Installation
 
 !!! warning "Attention"
- This software is highly unstable and subject to change at any time. Version 0.1.5 is only compatible with `fourier-grx` version `v0.1.1-rc.6`.
+    This software is highly unstable and subject to change at any time. Version 0.1.5 is only compatible with `fourier-grx` version `v0.1.1-rc.6`.
 
 ### On the robot
 
