@@ -94,13 +94,14 @@ class ZenohSession:
         try:
             # TODO: allow this to receive multiple replies
             reply = receiver.get(timeout)
-            receiver.close()
         except TimeoutError:
             logger.warning(f"Timeout waiting for reply from {topic}")
             return None
         except StopIteration:
             logger.debug(f"No reply from {topic}")
             return None
+        finally:
+            receiver.close()
 
         try:
             # print(reply.ok.value.payload)
