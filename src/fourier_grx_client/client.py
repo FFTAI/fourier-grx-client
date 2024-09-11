@@ -11,7 +11,6 @@ import msgpack_numpy as m
 import numpy as np
 import zenoh
 from loguru import logger
-from rich.console import Console
 from rich.progress import track
 
 from .constants import DEFAULT_POSITIONS
@@ -22,9 +21,6 @@ from .zenoh_utils import ZenohSession
 m.patch()
 
 zenoh.init_logger()
-console = Console()
-log = console.log
-print = console.print
 
 np.set_printoptions(precision=2, suppress=True)
 
