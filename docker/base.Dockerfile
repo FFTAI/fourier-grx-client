@@ -21,11 +21,3 @@ RUN ln -s /usr/bin/python${PYTHON_VERSION} /usr/bin/python
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 RUN echo "source /opt/venv/bin/activate" >> /root/.bashrc
-
-COPY . /fourier_grx_client
-WORKDIR /fourier_grx_client
-RUN pip install --upgrade --no-cache-dir pip
-RUN pip install pdm
-
-# build the project with pdm
-RUN pdm build
