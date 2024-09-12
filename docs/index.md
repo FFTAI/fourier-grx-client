@@ -34,7 +34,7 @@ pip install -e .
 
 First make sure you know the IP address of the robot server and the namespace it is running on. Namespace is set by the `--namespace` flag when starting the robot server.
 
-On your robot: 
+On your robot:
 
 ```bash
 grx run ./path/to/config.yaml --urdf-path ./path/to/urdf_folder --namespace gr/my_awesome_robot

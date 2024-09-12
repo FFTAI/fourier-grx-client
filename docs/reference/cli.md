@@ -1,6 +1,6 @@
 # `grx` CLI Reference
 
-!!! warning "Attention" 
+!!! warning "Attention"
     The `grx` CLI is installed with the `fourier-grx` package,  which is only comaptible with `python==3.11`. It is intended to be running onboard the robot. Make sure to install the package before using the CLI.
 
 
@@ -126,4 +126,3 @@ $ grx generate-sensor-offset [OPTIONS]
 **Options**:
 
 * `--help`: Show this message and exit.
-
