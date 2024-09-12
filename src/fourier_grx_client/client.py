@@ -62,6 +62,7 @@ class RobotClient(ZenohSession):
             logger.remove()
             logger.add(sys.stderr, level="INFO")
         if namespace is None:
+            logger.warning("No namespace provided, trying to load the robot_id from ~/.fourier/robot_id.yaml")
             robot_serial_number_store_path = Path.home() / ".fourier" / "robot_id.yaml"
             if not robot_serial_number_store_path.exists():
                 # create the folder
@@ -70,13 +71,12 @@ class RobotClient(ZenohSession):
                 # write the default serial number
                 with open(robot_serial_number_store_path, "w") as f:
                     f.write(f"robot_id: robot_{Path.home().name}")
+                logger.warning("No robot_id found, a default robot_id has been created at ~/.fourier/robot_id.yaml")
 
-            robot_id = OmegaConf.load(robot_serial_number_store_path)["robot_id"]
+            robot_id: str = OmegaConf.load(robot_serial_number_store_path)["robot_id"]  # type: ignore
             namespace = f"gr/{robot_id}"
 
-        logger.success(f"RobotClient namespace = {namespace}")
-
-        # -------------------------
+        logger.success(f"RobotClient starting with namespace: {namespace}")
 
         zenoh_config = zenoh.Config()
         zenoh_config.insert_json5(zenoh.config.CONNECT_KEY, json.dumps([f"tcp/{server_ip}:7447"]))
@@ -156,7 +156,7 @@ class RobotClient(ZenohSession):
             logger.info("Waiting for joint positions...")
             time.sleep(0.1)
 
-        logger.success("RobotClient OK!")
+        logger.success(f"RobotClient started with namespace: {namespace}")
 
     def _state_callback(self, sample):
         state_value_type = str(sample.key_expr).split("/")[-2]
@@ -441,7 +441,39 @@ class RobotClient(ZenohSession):
 
         ???+ info "Joint Order"
             The joints order is as follows:
-                0: l_hip_roll, 1: l_hip_yaw, 2: l_hip_pitch, 3: l_knee_pitch, 4: l_ankle_pitch, 5: l_ankle_roll, 6: r_hip_roll, 7: r_hip_yaw, 8: r_hip_pitch, 9: r_knee_pitch, 10: r_ankle_pitch, 11: r_ankle_roll, 12: joint_waist_yaw, 13: joint_waist_pitch, 14: joint_waist_roll, 15: joint_head_pitch, 16: joint_head_roll, 17: joint_head_yaw, 18: l_shoulder_pitch, 19: l_shoulder_roll, 20: l_shoulder_yaw, 21: l_elbow_pitch, 22: l_wrist_yaw, 23: l_wrist_roll, 24: l_wrist_pitch, 25: r_shoulder_pitch, 26: r_shoulder_roll, 27: r_shoulder_yaw, 28: r_elbow_pitch, 29: r_wrist_yaw, 30: r_wrist_roll, 31: r_wrist_pitch
+                0: left_hip_roll_joint
+                  1: left_hip_yaw_joint
+                  2: left_hip_pitch_joint
+                  3: left_knee_pitch_joint
+                  4: left_ankle_pitch_joint
+                  5: left_ankle_roll_joint
+              6: right_hip_roll_joint
+                  7: right_hip_yaw_joint
+                  8: right_hip_pitch_joint
+                  9: right_knee_pitch_joint
+                  10: right_ankle_pitch_joint
+                  11: right_ankle_roll_joint
+              12: waist_yaw_joint
+                  13: waist_pitch_joint
+                  14: waist_roll_joint
+              15: head_pitch_joint
+                  16: head_roll_joint
+                  17: head_yaw_joint
+              18: left_shoulder_pitch_joint
+                  19: left_shoulder_roll_joint
+                  20: left_shoulder_yaw_joint
+                  21: left_elbow_pitch_joint
+                  22: left_wrist_yaw_joint
+                  23: left_wrist_roll_joint
+                  24: left_wrist_pitch_joint
+              25: right_shoulder_pitch_joint
+                  26: right_shoulder_roll_joint
+                  27: right_shoulder_yaw_joint
+                  28: right_elbow_pitch_joint
+                  29: right_wrist_yaw_joint
+                  30: right_wrist_roll_joint
+                  31: right_wrist_pitch_joint
+
 
         Example:
 
