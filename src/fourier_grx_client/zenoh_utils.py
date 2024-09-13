@@ -113,7 +113,9 @@ class ZenohSession:
             logger.error(f"{topic} ({value}): {err_msg}")
             return None
 
-    def _publish(self, topic: str, value: Any, attachment: dict[str | bytes, Any] = {}):
+    def _publish(self, topic: str, value: Any, attachment: dict[str | bytes, Any] | None = None):
+        if attachment is None:
+            attachment = {}
         if topic not in self._publishers:
             raise ValueError(f"Unknown topic: {topic}")
         if self._publishers[topic] is None:

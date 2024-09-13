@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import sys
 import threading
 import time
@@ -50,7 +51,7 @@ class RobotClient(ZenohSession):
         Args:
             server_ip (str, optional): IP address of the grx server. Please make sure to properly setup the firewall to allow port 7447. Defaults to "localhost".
             freq (int, optional): Robot state update frequency. Usually the user doesn't need to modify this. Defaults to 400.
-            namespace (str, optional): Robot namespace. If not provided, it will try to use the `robot_id` provided in `~/.fourier/robot_id.yaml`. If the file does not exist, it will be created using the computer username. Defaults to None.
+            namespace (str, optional): Robot namespace. If not provided, it will try to use the `robot_id` provided in the environment variable `GRX_ROBOT_ID`. If the environment variable is not set, it will try to load the robot_id from the file `~/.fourier/robot_id.yaml`. If the file does not exist, it will fall back to the default namespace `gr`. Defaults to None.
 
         Raises:
             FourierConnectionError: If the connection to the server failed.
@@ -61,20 +62,9 @@ class RobotClient(ZenohSession):
         else:
             logger.remove()
             logger.add(sys.stderr, level="INFO")
+
         if namespace is None:
-            logger.warning("No namespace provided, trying to load the robot_id from ~/.fourier/robot_id.yaml")
-            robot_serial_number_store_path = Path.home() / ".fourier" / "robot_id.yaml"
-            if not robot_serial_number_store_path.exists():
-                # create the folder
-                robot_serial_number_store_path.parent.mkdir(parents=True, exist_ok=True)
-
-                # write the default serial number
-                with open(robot_serial_number_store_path, "w") as f:
-                    f.write(f"robot_id: robot_{Path.home().name}")
-                logger.warning("No robot_id found, a default robot_id has been created at ~/.fourier/robot_id.yaml")
-
-            robot_id: str = OmegaConf.load(robot_serial_number_store_path)["robot_id"]  # type: ignore
-            namespace = f"gr/{robot_id}"
+            namespace = self._retrieve_namespace()
 
         logger.success(f"RobotClient starting with namespace: {namespace}")
 
@@ -148,6 +138,12 @@ class RobotClient(ZenohSession):
                 priority=zenoh.Priority.REAL_TIME(),
                 congestion_control=zenoh.CongestionControl.DROP(),
             ),
+            # TODO: for continuous ik target
+            # "ik_target": self.session.declare_publisher(
+            #     keyexpr=f"{self.prefix}/control/ik_target",
+            #     priority=zenoh.Priority.REAL_TIME(),
+            #     congestion_control=zenoh.CongestionControl.DROP(),
+            # ),
         }
 
         # sleep for a while to wait for the subscriber to receive the initial states
@@ -157,6 +153,36 @@ class RobotClient(ZenohSession):
             time.sleep(0.1)
 
         logger.success(f"RobotClient started with namespace: {namespace}")
+
+    @staticmethod
+    def _retrieve_namespace() -> str:
+        """Get the robot namespace. If the environment variable `GRX_ROBOT_ID` is set, it will use the value as the robot_id. Otherwise, it will try to load the robot_id from the file `~/.fourier/robot_id.yaml`. If the file does not exist, it will fall back to the default namespace `gr`.
+
+        Returns:
+            str: The robot namespace.
+        """
+        robot_id = os.getenv("GRX_ROBOT_ID")
+        if robot_id is not None:
+            logger.info(
+                f"Loaded robot_id from environment variable GRX_ROBOT_ID: {robot_id}. Using namespace: gr/{robot_id}"
+            )
+            namespace = f"gr/{robot_id}"
+            return namespace
+
+        id_path = Path.home() / ".fourier" / "robot_id.yaml"
+        logger.warning(f"No namespace provided, trying to load the robot_id from {id_path}.")
+
+        if not id_path.exists():
+            namespace = "gr"
+            logger.warning("No robot_id found, will use the default namespace: gr, which is not recommended.")
+
+            return namespace
+
+        robot_id = OmegaConf.load(id_path)["robot_id"]  # type: ignore
+        namespace = f"gr/{robot_id}"
+        logger.info(f"Loaded robot_id from ~/.fourier/robot_id.yaml: {robot_id}. Using namespace: gr/{robot_id}")
+
+        return namespace
 
     def _state_callback(self, sample):
         state_value_type = str(sample.key_expr).split("/")[-2]
@@ -188,14 +214,14 @@ class RobotClient(ZenohSession):
 
     @property
     def joint_positions(self):
-        """Get the current joint positions of the robot."""
-        position = np.asarray(self.states["joint"]["position"])
+        """Get the current joint positions of the robot. The joint positions are in radians."""
+        position = np.deg2rad(self.states["joint"]["position"])
         return position
 
     @property
     def joint_velocity(self):
-        """Get the current joint velocities of the robot."""
-        velocity = np.asarray(self.states["joint"]["velocity"])
+        """Get the current joint velocities of the robot. The joint velocities are in radians per second."""
+        velocity = np.deg2rad(self.states["joint"]["velocity"])
         return velocity
 
     @property
@@ -218,6 +244,13 @@ class RobotClient(ZenohSession):
     def is_moving(self):
         """Whether the robot is currently moving."""
         return self._move_lock.locked()
+
+    @is_moving.setter
+    def is_moving(self, value: bool):
+        if value:
+            self._move_lock.acquire()
+        else:
+            self._move_lock.release()
 
     def set_enable(self, enable: bool):
         """Enable or disable the motors."""
@@ -310,18 +343,22 @@ class RobotClient(ZenohSession):
         self,
         control_type: Literal["position", "velocity", "effort", "current"],
         commands: np.ndarray | list,
+        degrees: bool = False,
     ):
         """Control the joints in a group with the specified control type.
 
         Args:
             control_type (Literal["position", "velocity", "current"]): The control type to set.
             commands (np.ndarray | list): The control commands to set.
+            degrees (bool, optional): Whether the joint positions and velocities are in degrees. Defaults to False.
         """
 
         # TODO: figure out how to fill in missing velocity and current values
         if control_type == "position":
+            commands = np.deg2rad(commands) if degrees else np.asarray(commands)
             self._publish("position", commands)
         elif control_type == "velocity":
+            commands = np.deg2rad(commands) if degrees else np.asarray(commands)
             self._publish("velocity", commands)
         elif control_type == "effort":
             self._publish("effort", commands)
@@ -347,21 +384,26 @@ class RobotClient(ZenohSession):
         )
         return res
 
-    def inverse_kinematics(self, chain_names: list[str], targets: list[np.ndarray], dt: float, degrees=True):
+    def inverse_kinematics(
+        self, chain_names: list[str], targets: list[np.ndarray], move=False, dt: float = 0.01, degrees=True
+    ):
         """Get the joint positions for the specified chains to reach the target pose.
 
         Args:
             chain_names (list[str]): The chains to get the joint positions for. Available chain names: 'head', 'left_arm', 'right_arm'.
             targets (list[np.ndarray]): The target poses.
+            move (bool, optional): Whether to move the robot to the target pose. Defaults to False.
             dt (float): The time step for the inverse kinematics.
 
         Returns:
             np.ndarray: The joint positions to reach the target pose.
         """
 
+        if move:
+            self.is_moving = True
         res = self._call_service_wait(
             "inverse_kinematics",
-            value=Serde.pack({"chain_names": chain_names, "targets": targets, "dt": dt}),
+            value=Serde.pack({"move": move, "chain_names": chain_names, "targets": targets, "dt": dt}),
             timeout=0.1,
         )
 
@@ -397,10 +439,17 @@ class RobotClient(ZenohSession):
         )
         return res
 
-    def liveness_check(self):
-        """Check if the robot server is alive."""
+    def liveness_check(self, timeout: float = 1.0):
+        """Check if the robot server is alive.
 
-        info = self._call_service_wait("robot/info", timeout=1.0)
+        Args:
+            timeout (float, optional): Timeout in seconds. Defaults to 1.0.
+
+        Raises:
+            FourierConnectionError: If the connection to the server failed.
+        """
+
+        info = self._call_service_wait("robot/info", timeout=timeout)
         if info is None:
             raise FourierConnectionError(
                 "Failed to connect to the robot server.  Please make sure the server is running."
@@ -424,14 +473,14 @@ class RobotClient(ZenohSession):
         # silently ignore if the robot is moving
         if self._move_lock.locked():
             return
-        self._publish("positions", self.states["joint"]["position"])
+        self._publish("position", self.states["joint"]["position"])
 
     def move_joints(
         self,
         group: ControlGroup | list | str,
         positions: np.ndarray | list,
         duration: float = 0.0,
-        degrees: bool = True,
+        degrees: bool = False,
         blocking: bool = True,
     ):
         """Move in joint space with time duration.
@@ -490,13 +539,10 @@ class RobotClient(ZenohSession):
             group (ControlGroup | list | str): The group of joints to move, specified by a string or a ControlGroup enum, or a list of joint indices.
             positions (np.ndarray[float]): target joint position in degrees.
             duration (float, optional): Time duration in seconds. If set to 0, the joints will move in their maximum speed without interpolation. Defaults to 0.0.
-            degrees (bool, optional): Whether the joint positions are in degrees. Defaults to True.
+            degrees (bool, optional): Whether the joint positions are in degrees. Defaults to False.
             blocking (bool, optional): If True, block until the move is completed. Defaults to True.
         """
-        if not degrees:
-            positions = np.rad2deg(positions)
-        else:
-            positions = np.asarray(positions)
+        positions = np.rad2deg(positions) if not degrees else np.asarray(positions)
         dest_pos = self.joint_positions.copy()
 
         if isinstance(group, ControlGroup):
@@ -520,7 +566,7 @@ class RobotClient(ZenohSession):
             return
 
         if duration == 0:
-            self._publish("positions", dest_pos)
+            self._publish("position", dest_pos)
             return
 
         def task():
@@ -534,7 +580,7 @@ class RobotClient(ZenohSession):
                 start_time = time.time()
                 while not (trajectory.finished(t := time.time() - start_time) or self._abort_event.is_set()):
                     pos = trajectory.at(t)
-                    self._publish("positions", pos)
+                    self._publish("position", pos)
                     time.sleep(1 / self.freq)
 
             self._abort_event.clear()
