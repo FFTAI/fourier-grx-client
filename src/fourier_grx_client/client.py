@@ -384,9 +384,7 @@ class RobotClient(ZenohSession):
         )
         return res
 
-    def inverse_kinematics(
-        self, chain_names: list[str], targets: list[np.ndarray], move=False, dt: float = 0.01, degrees=True
-    ):
+    def inverse_kinematics(self, chain_names: list[str], targets: list[np.ndarray], move=False, dt: float = 0.01):
         """Get the joint positions for the specified chains to reach the target pose.
 
         Args:
@@ -396,7 +394,7 @@ class RobotClient(ZenohSession):
             dt (float): The time step for the inverse kinematics.
 
         Returns:
-            np.ndarray: The joint positions to reach the target pose.
+            np.ndarray: The joint positions to reach the target pose (in radians).
         """
 
         if move:
@@ -407,8 +405,6 @@ class RobotClient(ZenohSession):
             timeout=0.1,
         )
 
-        if res is not None and degrees:
-            res = np.rad2deg(res)
         return res
 
     def get_transform(self, target_frame: str, source_frame: str, q: np.ndarray | None = None):
@@ -542,7 +538,7 @@ class RobotClient(ZenohSession):
             degrees (bool, optional): Whether the joint positions are in degrees. Defaults to False.
             blocking (bool, optional): If True, block until the move is completed. Defaults to True.
         """
-        positions = np.rad2deg(positions) if not degrees else np.asarray(positions)
+        positions = np.deg2rad(positions) if degrees else np.asarray(positions)
         dest_pos = self.joint_positions.copy()
 
         if isinstance(group, ControlGroup):
