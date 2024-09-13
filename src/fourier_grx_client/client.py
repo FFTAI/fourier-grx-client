@@ -27,6 +27,8 @@ zenoh.init_logger()
 
 np.set_printoptions(precision=2, suppress=True)
 
+logger = logger.opt(ansi=True)
+
 
 class RobotClient(ZenohSession):
     """Client class for GR series robots.
@@ -66,7 +68,7 @@ class RobotClient(ZenohSession):
         if namespace is None:
             namespace = self._retrieve_namespace()
 
-        logger.success(f"RobotClient starting with namespace: {namespace}")
+        logger.info("RobotClient starting...")
 
         zenoh_config = zenoh.Config()
         zenoh_config.insert_json5(zenoh.config.CONNECT_KEY, json.dumps([f"tcp/{server_ip}:7447"]))
@@ -164,23 +166,27 @@ class RobotClient(ZenohSession):
         robot_id = os.getenv("GRX_ROBOT_ID")
         if robot_id is not None:
             logger.info(
-                f"Loaded robot_id from environment variable GRX_ROBOT_ID: {robot_id}. Using namespace: gr/{robot_id}"
+                f"Loaded <blue>robot_id</blue>  from environment variable GRX_ROBOT_ID: {robot_id}. Using namespace: gr/{robot_id}"
             )
             namespace = f"gr/{robot_id}"
             return namespace
 
         id_path = Path.home() / ".fourier" / "robot_id.yaml"
-        logger.warning(f"No namespace provided, trying to load the robot_id from {id_path}.")
+        logger.warning(f"No namespace provided, trying to load the <blue>robot_id</blue>  from {id_path}.")
 
         if not id_path.exists():
             namespace = "gr"
-            logger.warning("No robot_id found, will use the default namespace: gr, which is not recommended.")
+            logger.warning(
+                "No <blue>robot_id</blue> found, will use the default namespace: gr, which is <red>not recommended</red>."
+            )
 
             return namespace
 
         robot_id = OmegaConf.load(id_path)["robot_id"]  # type: ignore
         namespace = f"gr/{robot_id}"
-        logger.info(f"Loaded robot_id from ~/.fourier/robot_id.yaml: {robot_id}. Using namespace: gr/{robot_id}")
+        logger.info(
+            f"Loaded <blue>robot_id</blue> from ~/.fourier/robot_id.yaml: {robot_id}. Using namespace: gr/{robot_id}"
+        )
 
         return namespace
 

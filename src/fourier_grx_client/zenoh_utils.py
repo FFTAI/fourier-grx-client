@@ -127,6 +127,7 @@ class ZenohSession:
             logger.debug(f"Error publishing to {topic}: {ex}")
 
     def close(self):
+        logger.info("Closing session...")
         try:
             logger.trace("Undecalare services")
             for q in self._services.values():
@@ -135,8 +136,8 @@ class ZenohSession:
             for s in self._subscribers.values():
                 s.undeclare()
             logger.trace("Undecalare publishers")
-            for p in self._publishers.values():
-                logger.trace(f"Undecalare publisher on topic: {p.key_expr}")
+            for t, p in self._publishers.items():
+                logger.trace(f"Undecalare publisher on topic: {t}")
                 p.undeclare()
         except Exception as ex:
             logger.exception(ex)
@@ -148,4 +149,5 @@ class ZenohSession:
             pass
 
     def __del__(self):
-        self.close()
+        if self.session:
+            self.close()
