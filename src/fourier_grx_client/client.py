@@ -258,12 +258,6 @@ class RobotClient(ZenohSession):
         else:
             self._move_lock.release()
 
-    def set_enable(self, enable: bool):
-        """Enable or disable the motors."""
-
-        cmd = "ON" if enable else "OFF"
-        self._call_service_wait("control/enable", value=str(cmd), timeout=1.0)
-
     def enable(self):
         """Enable the motors."""
         self.set_enable(True)
@@ -272,7 +266,13 @@ class RobotClient(ZenohSession):
         """Disable the motors."""
         self.set_enable(False)
 
-    def set_home(self):
+    def set_enable(self, enable: bool):
+        """Enable or disable the motors."""
+
+        cmd = "ON" if enable else "OFF"
+        self._call_service_wait("control/enable", value=str(cmd), timeout=1.0)
+
+    def calibrate_sensors(self):
         """Get sensor offsets and save to `sensor_offset.json`"""
 
         self._call_service_wait("control/set_home", timeout=11.0)

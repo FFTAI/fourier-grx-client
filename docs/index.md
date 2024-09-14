@@ -1,3 +1,4 @@
+![banner](assets/banner.jpg)
 # fourier-grx-client
 
 This is the client library for the Fourier GRX robot.
@@ -6,7 +7,7 @@ The correponding server library can be found [here](https://pypi.org/project/fou
 ## Installation
 
 !!! warning "Attention"
-  This software is highly unstable and subject to change at any time. Version 0.2.0 is only compatible with `fourier-grx` version `v1.0.0` and up.
+    This software is highly unstable and subject to change at any time. Version 0.2.0 is only compatible with `fourier-grx` version `v1.0.0` and up.
 
 ### On the robot
 

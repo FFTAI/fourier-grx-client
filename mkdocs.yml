@@ -47,6 +47,7 @@ plugins:
 nav:
   - Usage:
       - Introduction: index.md
+      - Calibration: tutorials/calibration.md
 
   - Reference:
       - reference/cli.md
