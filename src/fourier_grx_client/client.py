@@ -375,12 +375,15 @@ class RobotClient(ZenohSession):
     def forward_kinematics(self, chain_names: list[str], q: np.ndarray | None = None):
         """Get the end effector pose of the specified chains.
 
+        !!! info
+            The available chain names are: `head`, `left_arm`, `right_arm`, with corresponding end effector frames: `head_yaw_link`, `left_end_effector_link`, `right_end_effector_link`, and the transformation matrices are in the `torso_link` frame.
+
         Args:
             chain_names (list[str]): The chains to get the end effector pose of. Available chain names: 'head', 'left_arm', 'right_arm'.
             q (np.ndarray, optional): The robot confiuration to do forward kinematics in. Defaults to None.
 
         Returns:
-            list: The end effector pose of the specified chains.
+            list: The end effector pose is a list of 4x4 transformation matrices. The order of the matrices is the same as the order of the chain names.
         """
 
         res = self._call_service_wait(
