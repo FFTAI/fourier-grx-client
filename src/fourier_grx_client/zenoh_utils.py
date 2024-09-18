@@ -54,19 +54,21 @@ class ZenohSession:
         parameters: dict[str, Any] = {},
         attachment: dict[str | bytes, str | bytes] = {},
         timeout: float = 1.0,
-        callback: Callable[[zenoh.Reply], Any] | None = None,
+        callback: Callable[[Any], Any] | None = None,
     ):
         def _callback(reply: zenoh.Reply):
             try:
                 res = Serde.unpack(reply.ok.value.payload)
                 logger.debug(f"{topic}: {res}")
+                if callback:
+                    callback(res)
             except Exception:
                 # TODO: handle error
                 logger.error(f"{topic}: {reply.err.payload.decode()}")
 
         self.session.get(
             self._encode_topic(topic, parameters),
-            callback if callback else _callback,
+            _callback,
             value=self._encode_value(value),
             attachment=self._encode_attachment(attachment),
             timeout=timeout,
@@ -91,6 +93,7 @@ class ZenohSession:
             attachment=self._encode_attachment(attachment),
             timeout=timeout,
         )
+
         try:
             # TODO: allow this to receive multiple replies
             reply = receiver.get(timeout)
@@ -112,6 +115,40 @@ class ZenohSession:
             err_msg = reply.err.payload.decode()
             logger.error(f"{topic} ({value}): {err_msg}")
             return None
+
+    def _call_action(
+        self,
+        topic: str,
+        value: Any | None = None,
+        parameters: dict[str, Any] = {},
+        attachment: dict[str | bytes, Any] = {},
+        timeout: float = 15.0,
+    ):
+        if self.session is None:
+            logger.warning("Session is closed")
+            return
+        receiver = self.session.get(
+            self._encode_topic(topic, parameters),
+            zenoh.Queue(),
+            value=self._encode_value(value),
+            attachment=self._encode_attachment(attachment),
+            timeout=timeout,
+        )
+        try:
+            for reply in receiver:
+                ok, res = parse_reply(reply)
+                if ok:
+                    logger.debug(f"{topic} ({value}): {res}")
+                    yield res
+                else:
+                    logger.error(f"{topic} ({value}): {res}")
+                    yield None
+        except TimeoutError:
+            logger.warning(f"Timeout waiting for reply from {topic}")
+        except StopIteration:
+            logger.debug(f"Reply from {topic} completed")
+        finally:
+            receiver.close()
 
     def _publish(self, topic: str, value: Any, attachment: dict[str | bytes, Any] | None = None):
         if attachment is None:

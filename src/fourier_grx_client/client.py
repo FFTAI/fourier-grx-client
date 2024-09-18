@@ -149,6 +149,7 @@ class RobotClient(ZenohSession):
         }
 
         # sleep for a while to wait for the subscriber to receive the initial states
+        logger.info("Waiting for initial states...")
         time.sleep(0.5)
         while self.states["joint"]["position"] is None:
             logger.info("Waiting for joint positions...")
@@ -253,9 +254,9 @@ class RobotClient(ZenohSession):
 
     @is_moving.setter
     def is_moving(self, value: bool):
-        if value:
+        if value and not self._move_lock.locked():
             self._move_lock.acquire()
-        else:
+        elif not value and self._move_lock.locked():
             self._move_lock.release()
 
     def enable(self):
@@ -391,9 +392,19 @@ class RobotClient(ZenohSession):
             value=Serde.pack({"chain_names": chain_names, "q": q}),
             timeout=0.1,
         )
+
+        logger.debug(f"FK result for {chain_names}: {res}")
         return res
 
-    def inverse_kinematics(self, chain_names: list[str], targets: list[np.ndarray], move=False, dt: float = 0.01):
+    def inverse_kinematics(
+        self,
+        chain_names: list[str],
+        targets: list[np.ndarray],
+        move=False,
+        dt: float = 0.01,
+        velocity_scaling_factor: float = 1.0,
+        convergence_threshold: float = 10,
+    ):
         """Get the joint positions for the specified chains to reach the target pose.
 
         Args:
@@ -408,11 +419,25 @@ class RobotClient(ZenohSession):
 
         if move:
             self.is_moving = True
+
         res = self._call_service_wait(
             "inverse_kinematics",
-            value=Serde.pack({"move": move, "chain_names": chain_names, "targets": targets, "dt": dt}),
-            timeout=0.1,
+            value=Serde.pack(
+                {
+                    "move": move,
+                    "chain_names": chain_names,
+                    "targets": targets,
+                    "velocity_scaling_factor": velocity_scaling_factor,
+                    "convergence_threshold": convergence_threshold,
+                    "dt": dt,
+                }
+            ),
+            timeout=1.0,
         )
+
+        logger.debug("IK Finished")
+        if move:
+            self.is_moving = False
 
         return res
 
@@ -459,6 +484,7 @@ class RobotClient(ZenohSession):
             raise FourierConnectionError(
                 "Failed to connect to the robot server.  Please make sure the server is running."
             )
+        logger.info(f"Connected to robot server: {info}")
 
     def reboot(self):
         """Reboot the motors."""
