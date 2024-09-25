@@ -151,7 +151,7 @@ class RobotClient(ZenohSession):
         # sleep for a while to wait for the subscriber to receive the initial states
         logger.info("Waiting for initial states...")
         time.sleep(0.5)
-        while self.states["joint"]["position"] is None:
+        while self.joint_positions is None:
             logger.info("Waiting for joint positions...")
             time.sleep(0.1)
 
@@ -504,7 +504,7 @@ class RobotClient(ZenohSession):
         # silently ignore if the robot is moving
         if self._move_lock.locked():
             return
-        self._publish("position", self.states["joint"]["position"])
+        self._publish("position", self.joint_positions)
 
     def move_joints(
         self,
