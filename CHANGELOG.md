@@ -5,7 +5,7 @@
 - Robot namespace support
 - `control_joints` API in velocity mode and current mode
 - forward kinematcs and inverse kinematics API
-## Release v0.1.6 (Unreleased)
+- gravity compensation API
 
 ### 💪 Enhancements
 

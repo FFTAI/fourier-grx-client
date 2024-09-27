@@ -1,6 +1,6 @@
 [project]
 name = "fourier-grx-client"
-version = "0.2.0"
+version = "0.2.0-alpha.1"
 description = "Client library for Fourier GRx series robots"
 authors = [{ name = "Yuxiang Gao", email = "yuxiang.gao@fftai.com" }]
 dependencies = [
