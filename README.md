@@ -10,7 +10,7 @@ The correponding server library can be found [here](https://pypi.org/project/fou
 
 ### On the robot
 
-On the robot, install `fourier-grx==0.1.1rc6` following the instructions [here](https://github.com/FFTAI/Wiki-GRx-Deploy/tree/0.1.1rc6).
+On the robot, install `fourier-grx==1.0.0a8` following the instructions [here](https://github.com/FFTAI/Wiki-GRx-Deploy/tree/0.1.1rc6).
 
 ### On your local machine:
 
@@ -34,7 +34,7 @@ pip install -e .
 
 Please read the [Tutorial](tutorial.ipynb) for a step-by-step guide on how to get started and use the interfaces.
 
-Demo scripts can be found in the [demo](demo/) directory.
+Demo scripts can be found in the [example](example/) directory.
 
 > [!TIP]
 > For more information on the API, see the [API Reference](https://fftai.github.io/fourier-grx-client/latest/reference/api/).
