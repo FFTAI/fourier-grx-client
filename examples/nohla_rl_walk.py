@@ -2,7 +2,7 @@ import time
 
 import numpy as np
 import typer
-from fourier_grx.sdk import ControlGroup, ControlMode, RobotClient
+from fourier_grx_client import ControlGroup, ControlMode, RobotClient
 from fourier_grx.sdk.algorithm import FourierGR1NohlaRLWalkControlModel
 from ischedule import run_loop, schedule
 

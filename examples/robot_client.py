@@ -7,7 +7,7 @@ from rich.pretty import pprint
 from rich.prompt import Confirm, Prompt
 from rich.table import Table
 
-from fourier_grx.sdk import ControlGroup, RobotClient
+from fourier_grx_client import ControlGroup, RobotClient
 
 
 # Initialize console for rich logging and printing
