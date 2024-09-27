@@ -10,7 +10,7 @@ The correponding server library can be found [here](https://pypi.org/project/fou
 
 ### On the robot
 
-On the robot, install `fourier-grx==0.1.1rc6` following the instructions [here](https://github.com/FFTAI/Wiki-GRx-Deploy/tree/0.1.1rc6).
+On the robot, install `fourier-grx==1.0.0a8` following the instructions [here](https://github.com/FFTAI/Wiki-GRx-Deploy/tree/0.1.1rc6).
 
 ### On your local machine:
 
@@ -32,21 +32,9 @@ pip install -e .
 
 ## Usage
 
-First make sure you know the IP address of the robot server and the namespace it is running on. Namespace is set by the `--namespace` flag when starting the robot server.
+Please read the [Tutorial](tutorial.ipynb) for a step-by-step guide on how to get started and use the interfaces.
 
-On your robot:
-
-```bash
-grx run ./path/to/config.yaml --urdf-path ./path/to/urdf_folder --namespace gr/my_awesome_robot
-```
-
-Then on your local machine, you can create a client object like this:
-
-```python
-from fourier_grx_client import *
-
-r = RobotClient(namespace="gr/my_awesome_robot", server_ip="192.168.6.6")
-```
+Demo scripts can be found in the [example](example/) directory.
 
 > [!TIP]
 > For more information on the API, see the [API Reference](https://fftai.github.io/fourier-grx-client/latest/reference/api/).

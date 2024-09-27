@@ -203,7 +203,6 @@ class RobotClient(ZenohSession):
 
     def get_group_position(self, group: ControlGroup):
         """Get the joint positions of a group."""
-
         return self.joint_positions[group.slice].copy()
 
     def get_group_position_by_name(self, name: str):
@@ -218,7 +217,19 @@ class RobotClient(ZenohSession):
             return self.get_group_position(group)
         except KeyError as ex:
             raise FourierValueError(f"Unknown group name: {name}") from ex
+        
+    def get_group_velocity(self, group: ControlGroup):
+        """Get the joint velocities of a group."""
+        return self.joint_velocity[group.slice].copy()
+    
+    def get_group_current(self, group: ControlGroup):
+        """Get the joint currents of a group."""
+        return self.joint_current[group.slice].copy()
 
+    def get_group_effort(self, group: ControlGroup):
+        """Get the joint efforts of a group."""
+        return self.joint_effort[group.slice].copy()
+    
     @property
     def joint_positions(self):
         """Get the current joint positions of the robot. The joint positions are in radians."""
@@ -242,11 +253,47 @@ class RobotClient(ZenohSession):
         """Get the current joint currents of the robot."""
         current = np.asarray(self.states["joint"]["current"])
         return current
-
+    
+    @property
+    def imu_quaternion(self):
+        """Get the current IMU orientation as a quaternion."""
+        quat = np.asarray(self.states["imu"]["quat"])
+        return quat
+    
+    @property
+    def imu_angles(self):
+        """Get the current IMU orientation as Euler angles."""
+        euler_angle = np.asarray(self.states["imu"]["euler_angle"])
+        return euler_angle
+    
+    @property
+    def imu_angular_velocity(self):
+        """Get the current IMU angular velocity."""
+        angular_velocity = np.asarray(self.states["imu"]["angular_velocity"])
+        return angular_velocity
+    
+    @property
+    def imu_linear_acceleration(self):
+        """Get the current IMU linear acceleration."""
+        acceleration = np.asarray(self.states["imu"]["acceleration"]) 
+        return acceleration
+    
+    @property
+    def base_pose(self):
+        """Get the current base pose."""
+        estimate_xyz = np.asarray(self.states["base"]["estimate_xyz"])
+        return estimate_xyz
+    
+    @property
+    def base_velocity(self):
+        """Get the current base velocity."""
+        estimate_xyz_vel = np.asarray(self.states["base"]["estimate_xyz_vel"])
+        return estimate_xyz_vel
+    
     @property
     def number_of_joint(self):
         return len(self.joint_positions)
-
+    
     @property
     def is_moving(self):
         """Whether the robot is currently moving."""
