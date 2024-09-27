@@ -17,8 +17,8 @@ system: "LINUX"
 
 # Robot Layer -----------------------------------------------------------------
 peripheral:
-  use_joystick: true
-  joystick_connected: true
+  use_joystick: false
+  joystick_connected: false
   joystick_type: "XBOX" # support "XBOS", "PS4", "PS5"
 
 robot:
@@ -33,9 +33,9 @@ robot:
 # Component Layer -------------------------------------------------------------
 sensor_usb_imu:
   usb: [
-      # must put base link imu at first
-      "/dev/ttyUSB0",
-    ]
+    # must put base link imu at first
+    "/dev/ttyUSB0",
+  ]
   comm_enable: [true]
   comm_frequency: [500]
 
