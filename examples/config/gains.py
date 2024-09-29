@@ -1,7 +1,6 @@
 import sys
-import time
 
-from fourier_grx_client import ControlGroup, RobotClient
+from fourier_grx_client import RobotClient
 from loguru import logger
 
 """

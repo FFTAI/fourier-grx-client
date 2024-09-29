@@ -653,7 +653,7 @@ class RobotClient(ZenohSession):
 
         if gravity_compensation:
             with self._move_lock:
-                self._publish("impedance", Serde.pack({"position": positions}))
+                self._publish("impedance", Serde.pack({"position": dest_pos}))
             return
 
         if duration == 0:

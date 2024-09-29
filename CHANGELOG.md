@@ -16,7 +16,6 @@
 - `movej` API
 
 
-
 ### 💪 Enhancements
 
 - Add `py.typed` file to package
