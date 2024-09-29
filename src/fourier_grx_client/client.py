@@ -78,6 +78,7 @@ class RobotClient(ZenohSession):
         super().__init__(prefix=namespace, config=zenoh_config)
 
         self.freq = freq
+        self.ctrl_dt = 1 / 200  # TODO: config and doc
 
         self._abort_event = threading.Event()
         self._move_lock = threading.Lock()
@@ -560,6 +561,7 @@ class RobotClient(ZenohSession):
         duration: float = 0.0,
         degrees: bool = False,
         blocking: bool = True,
+        gravity_compensation: bool = False,
     ):
         """Move in joint space with time duration.
 
@@ -670,16 +672,72 @@ class RobotClient(ZenohSession):
         else:
             task()
 
+    def movej(
+        self,
+        side: Literal["left", "right"],
+        position: np.ndarray,
+        velocity: np.ndarray | None = None,
+        acceleration: np.ndarray | None = None,
+        max_velocity: np.ndarray | None = None,
+        max_acceleration: np.ndarray | None = None,
+        max_jerk: np.ndarray | None = None,
+        degrees: bool = False,
+    ):
+        if degrees:
+            position = np.deg2rad(position)
+            velocity = np.deg2rad(velocity) if velocity is not None else None
+            acceleration = np.deg2rad(acceleration) if acceleration is not None else None
+            max_velocity = np.deg2rad(max_velocity) if max_velocity is not None else None
+            max_acceleration = np.deg2rad(max_acceleration) if max_acceleration is not None else None
+            max_jerk = np.deg2rad(max_jerk) if max_jerk is not None else None
+
+        traj = self._call_service_wait(
+            "control/movej",
+            value=Serde.pack(
+                {
+                    "side": side,
+                    "position": position,
+                    "velocity": velocity,
+                    "acceleration": acceleration,
+                    "max_velocity": max_velocity,
+                    "max_acceleration": max_acceleration,
+                    "max_jerk": max_jerk,
+                }
+            ),
+        )
+
+        if traj is None:
+            logger.warning("Failed to generate trajectory.")
+            return
+
+        with self._move_lock:
+            for pos, _ in track(
+                traj,
+                description="Moving...",
+                total=len(traj),
+            ):
+                if self._abort_event.is_set():
+                    self._abort_event.clear()
+                    break
+                dest_pos = self.joint_positions.copy()
+
+                if side == "left":
+                    dest_pos[ControlGroup.LEFT_ARM.slice] = pos
+                else:
+                    dest_pos[ControlGroup.RIGHT_ARM.slice] = pos
+                self._publish("position", dest_pos)
+                time.sleep(self.ctrl_dt)
+
     def abort(self):
         self._abort_event.set()
         self._update_pos()  # TODO:  test this
 
-    def play_traj(self, traj: list[np.ndarray], timestamps: list[float] | None = None):
+    def play_traj(self, group: ControlGroup, traj: list[np.ndarray], timestamps: list[float] | None = None, dt=0.005):
         """Play a trajectory in joint space."""
 
         # safely move to the start position
         logger.info("Moving to start position...")
-        self.move_joints(ControlGroup.ALL, traj[0], 2.0, blocking=True)
+        self.move_joints(group, traj[0], 2.0, blocking=True)
         logger.info("Start position reached.")
 
         if timestamps is None:
@@ -689,11 +747,14 @@ class RobotClient(ZenohSession):
                     description="Moving...",
                     total=len(traj) - 1,
                 ):
+                    dest_pos = self.joint_positions.copy()
                     if self._abort_event.is_set():
                         self._abort_event.clear()
                         break
-                    self._publish("position", pos)
-                    time.sleep(1 / self.freq)
+
+                    dest_pos[group.slice] = pos
+                    self._publish("position", dest_pos)
+                    time.sleep(dt)
             return
 
         t0 = timestamps[0]

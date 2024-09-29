@@ -1,6 +1,6 @@
 [project]
 name = "fourier-grx-client"
-version = "0.2.0-alpha.1"
+version = "0.2.0-alpha.2"
 description = "Client library for Fourier GRx series robots"
 authors = [{ name = "Yuxiang Gao", email = "yuxiang.gao@fftai.com" }]
 dependencies = [
@@ -11,6 +11,7 @@ dependencies = [
     "loguru>=0.7.2",
     "rich>=13.8.0",
     "omegaconf>=2.3.0",
+    "ipywidgets>=8.1.5",
 ]
 requires-python = ">=3.8"
 readme = "README.md"
