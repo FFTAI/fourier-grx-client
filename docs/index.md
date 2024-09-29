@@ -4,16 +4,35 @@
 This is the client library for the Fourier GRX robot.
 The correponding server library can be found [here](https://pypi.org/project/fourier-grx/1.0.0a10/).
 
+## ❗ Breaking Changes
+
+For users who have been using Wiki-GRx-Deploy and those who are new to this library, Please note the following breaking changes:
+
+- Wiki-GRx-Deploy has been deprecated and is no longer supported.
+- All user-facing interfaces now default to use **radians** instead of degrees.
+- URDF now loads from [Wiki-GRx-Models](https://github.com/FFTAI/Wiki-GRx-Models) via [fourier-robot-descriptions](https://pypi.org/project/fourier-robot-descriptions/) package.
+- Nameing convention for all links and joints are now consistent with the URDF.
+- Config file structure has been updated to match the latest version of the server.
+Default config file can be found under [config](https://gitee.com/FourierIntelligence/fourier-grx-client/tree/main/config) directory.
+
 ## Installation
 
 !!! warning "Attention"
-    This software is highly unstable and subject to change at any time. Version 0.2.0 is only compatible with `fourier-grx` version `v1.0.0` and up.
+    **This software is highly unstable and subject to change at any time. Version 0.2.0a3 is only compatible with `fourier-grx` version `v1.0.0a10` and up.**
 
 ### On the robot
 
 On the robot, install `fourier-grx==1.0.0a10` following the instructions [here](https://github.com/FFTAI/Wiki-GRx-Deploy/tree/1.0.0a10).
 
-### On your local machine:
+### On the robot computer:
+
+On the robot, install `fourier-grx==1.0.0a10` following the [Installation Instructions](https://gitee.com/FourierIntelligence/fourier-grx-client/blob/main/docs/Installation.md).
+
+### On other machines:
+
+**Grx client will be automatically installed when installing `fourier-grx` on the robot.**
+
+If you want to control the robot from another machine, you can install the client library using the following methods:
 
 #### Install from pypi
 
@@ -21,6 +40,7 @@ Run:
 
 ```bash
 pip install fourier-grx-client==0.2.0a3
+
 ```
 
 #### Install from source
@@ -33,24 +53,12 @@ pip install -e .
 
 ## Usage
 
-First make sure you know the IP address of the robot server and the namespace it is running on. Namespace is set by the `--namespace` flag when starting the robot server.
+Please read the [Tutorial](https://gitee.com/FourierIntelligence/fourier-grx-client/blob/main/Tutorial.ipynb) for a step-by-step guide on how to get started and use the interfaces.
 
-On your robot:
+Demo scripts can be found in the [examples](https://gitee.com/FourierIntelligence/fourier-grx-client/tree/main/examples) directory.
 
-```bash
-grx run ./path/to/config.yaml --urdf-path ./path/to/urdf_folder --namespace gr/my_awesome_robot
-```
 
-Then on your local machine, you can create a client object like this:
-
-```python
-from fourier_grx_client import *
-
-r = RobotClient(namespace="gr/my_awesome_robot", server_ip="192.168.6.6")
-```
-
-!!! tip
-    For more information on the API, see the [API Reference](reference/api.md).
+> For more information on the API, see the [API Reference](https://fftai.github.io/fourier-grx-client/latest/reference/api/).
 
 
 ## Development
@@ -65,4 +73,10 @@ pip install pdm
 
 ```bash
 pdm install -v -d
+```
+
+3. Install pre-commit hooks:
+
+```bash
+pre-commit install
 ```
