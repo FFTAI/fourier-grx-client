@@ -75,12 +75,8 @@ class DemoNohlaStand:
         """
 
         # get states
-        joint_measured_position_urdf_deg = self.client.states["joint"][
-            "position"
-        ].copy()
-        joint_measured_velocity_urdf_deg = self.client.states["joint"][
-            "velocity"
-        ].copy()
+        joint_measured_position_urdf_deg = self.client.states["joint"]["position"].copy()
+        joint_measured_velocity_urdf_deg = self.client.states["joint"]["velocity"].copy()
 
         controlled_joints = self.model.index_of_joints_real_robot
 
@@ -88,12 +84,8 @@ class DemoNohlaStand:
         joint_measured_position_nohla_urdf = np.zeros(len(controlled_joints))
         joint_measured_velocity_nohla_urdf = np.zeros(len(controlled_joints))
 
-        joint_measured_position_nohla_urdf = np.deg2rad(
-            joint_measured_position_urdf_deg
-        )[controlled_joints]
-        joint_measured_velocity_nohla_urdf = np.deg2rad(
-            joint_measured_velocity_urdf_deg
-        )[controlled_joints]
+        joint_measured_position_nohla_urdf = np.deg2rad(joint_measured_position_urdf_deg)[controlled_joints]
+        joint_measured_velocity_nohla_urdf = np.deg2rad(joint_measured_velocity_urdf_deg)[controlled_joints]
 
         # run algorithm
         _, _, joint_target_position_nohla_urdf = self.model.run(
@@ -101,13 +93,9 @@ class DemoNohlaStand:
             joint_measured_velocity_urdf=joint_measured_velocity_nohla_urdf,
         )  # [rad]
 
-        joint_target_position_nohla_urdf_deg = np.rad2deg(
-            joint_target_position_nohla_urdf
-        )
+        joint_target_position_nohla_urdf_deg = np.rad2deg(joint_target_position_nohla_urdf)
         joint_target_position_deg = np.zeros_like(joint_measured_position_urdf_deg)
-        joint_target_position_deg[controlled_joints] = (
-            joint_target_position_nohla_urdf_deg
-        )
+        joint_target_position_deg[controlled_joints] = joint_target_position_nohla_urdf_deg
 
         if self.act:
             self.client.move_joints(ControlGroup.ALL, joint_target_position_deg, 0.0)

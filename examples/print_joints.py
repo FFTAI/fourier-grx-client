@@ -1,7 +1,6 @@
 import time
 
 import numpy as np
-
 from fourier_grx_client import RobotClient
 
 if __name__ == "__main__":

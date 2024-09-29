@@ -2,13 +2,11 @@ import threading
 import time
 
 import numpy as np
+from fourier_grx_client import ControlGroup, RobotClient
 from rich.console import Console
 from rich.pretty import pprint
 from rich.prompt import Confirm, Prompt
 from rich.table import Table
-
-from fourier_grx_client import ControlGroup, RobotClient
-
 
 # Initialize console for rich logging and printing
 console = Console()

@@ -1,6 +1,6 @@
 import time
-from fourier_dhx.sdk.DexHand import DexHand
 
+from fourier_dhx.sdk.DexHand import DexHand
 
 # Ensure that the server is running on the robot before executing this script.
 
@@ -9,7 +9,7 @@ from fourier_dhx.sdk.DexHand import DexHand
 # For right hand use IP: 192.168.137.19
 
 _back, _stop = [-200, -200, -200, -200, -200, -200], [0, 0, 0, 0, 0, 0]
-HAND_IP = '192.168.137.39'  # Change to the appropriate IP address
+HAND_IP = "192.168.137.39"  # Change to the appropriate IP address
 hand = DexHand(HAND_IP)
 hand.set_pwm(_back)
 hand.calibration()
@@ -29,4 +29,3 @@ hand.set_pwm(_back)
 time.sleep(2)
 hand.set_pwm(_stop)
 time.sleep(0.01)
-

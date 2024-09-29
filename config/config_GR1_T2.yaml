@@ -211,5 +211,3 @@ robot_config:
     enabled_links: ["right_hand_yaw_link", "left_hand_yaw_link", "torso_link"]
 
   joints_to_lock: []
-
-
