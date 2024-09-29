@@ -791,6 +791,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#fourier_grx_client.client.RobotClient.movej" class="md-nav__link">
+    <span class="md-ellipsis">
+      movej
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#fourier_grx_client.client.RobotClient.play_traj" class="md-nav__link">
     <span class="md-ellipsis">
       play_traj
@@ -1177,6 +1186,15 @@
   <a href="#fourier_grx_client.client.RobotClient.move_joints" class="md-nav__link">
     <span class="md-ellipsis">
       move_joints
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fourier_grx_client.client.RobotClient.movej" class="md-nav__link">
+    <span class="md-ellipsis">
+      movej
     </span>
   </a>
   
@@ -2436,6 +2454,150 @@ If the duration is set to 0, the joints will move in their maximum speed without
             <td>
               <div class="doc-md-description">
                 <p>Whether to enable gravity compensation. Defaults to False.</p>
+              </div>
+            </td>
+            <td>
+                  <code>False</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="fourier_grx_client.client.RobotClient.movej" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">movej</span><span class="p">(</span><span class="n">side</span><span class="p">,</span> <span class="n">target_position</span><span class="p">,</span> <span class="n">target_velocity</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">target_acceleration</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">max_velocity</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">max_acceleration</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">max_jerk</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">degrees</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code>
+
+<a href="#fourier_grx_client.client.RobotClient.movej" class="headerlink" title="Permanent link">#</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+      <p>Move the specified arm to the target position.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>side</code></td>
+            <td>
+                  <code>Literal[&amp;quot;left&amp;quot;, &amp;quot;right&amp;quot;]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Side of the arm to move. Can be "left" or "right".</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>target_position</code></td>
+            <td>
+                  <code><span title="numpy.ndarray">ndarray</span> | list</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Desired joint position.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>target_velocity</code></td>
+            <td>
+                  <code><span title="numpy.ndarray">ndarray</span> | list | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Desired joint velocity. Defaults to None. If None, the robot will estimate the velocity based on the target position.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>target_acceleration</code></td>
+            <td>
+                  <code><span title="numpy.ndarray">ndarray</span> | list | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Desired acceleration. Defaults to None.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>max_velocity</code></td>
+            <td>
+                  <code><span title="numpy.ndarray">ndarray</span> | list | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Max velocity during trajectory generation. Defaults to None. If None, the robot will use the default max velocity at 5 rad/s.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>max_acceleration</code></td>
+            <td>
+                  <code><span title="numpy.ndarray">ndarray</span> | list | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Max acceleration during trajectory generation. Defaults to None. If None, the robot will use the default max acceleration at 10 rad/s^2</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>max_jerk</code></td>
+            <td>
+                  <code><span title="numpy.ndarray">ndarray</span> | list | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Max jerk during trajectory generation. Defaults to None. If None, the robot will use the default max jerk at 50 rad/s^3</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>degrees</code></td>
+            <td>
+                  <code>bool</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>True if the input is in degrees. Defaults to False.</p>
               </div>
             </td>
             <td>
