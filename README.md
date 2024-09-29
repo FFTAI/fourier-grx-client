@@ -35,6 +35,7 @@ Run:
 
 ```bash
 pip install fourier-grx-client==0.2.0a3
+
 ```
 
 #### Install from source
