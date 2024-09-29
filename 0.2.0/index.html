@@ -10,7 +10,7 @@
       
       
       
-        <link rel="next" href="reference/cli/">
+        <link rel="next" href="tutorials/calibration/">
       
       
       <link rel="icon" href="assets/logo.png">
@@ -435,6 +435,30 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="On your local machine:">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#install-from-pypi" class="md-nav__link">
+    <span class="md-ellipsis">
+      Install from pypi
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#install-from-source" class="md-nav__link">
+    <span class="md-ellipsis">
+      Install from source
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
       </ul>
@@ -451,10 +475,40 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#development" class="md-nav__link">
+    <span class="md-ellipsis">
+      Development
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tutorials/calibration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Calibration
+  </span>
+  
+
+      </a>
     </li>
   
 
@@ -626,6 +680,30 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="On your local machine:">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#install-from-pypi" class="md-nav__link">
+    <span class="md-ellipsis">
+      Install from pypi
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#install-from-source" class="md-nav__link">
+    <span class="md-ellipsis">
+      Install from source
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
       </ul>
@@ -637,6 +715,15 @@
   <a href="#usage" class="md-nav__link">
     <span class="md-ellipsis">
       Usage
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#development" class="md-nav__link">
+    <span class="md-ellipsis">
+      Development
     </span>
   </a>
   
@@ -660,26 +747,56 @@
   
 
 
+<p><img alt="banner" src="assets/banner.jpg" /></p>
 <h1 id="fourier-grx-client">fourier-grx-client<a class="headerlink" href="#fourier-grx-client" title="Permanent link">#</a></h1>
-<p>This is the client library for the Fourier GRX robot. 
+<p>This is the client library for the Fourier GRX robot.
 The correponding server library can be found <a href="https://pypi.org/project/fourier-grx/0.1.1rc6/">here</a>.</p>
 <h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">#</a></h2>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
+<div class="admonition warning">
+<p class="admonition-title">Attention</p>
 <p>This software is highly unstable and subject to change at any time. Version 0.2.0 is only compatible with <code>fourier-grx</code> version <code>v1.0.0</code> and up.</p>
 </div>
 <h3 id="on-the-robot">On the robot<a class="headerlink" href="#on-the-robot" title="Permanent link">#</a></h3>
-<p>On the robot, install <code>fourier-grx==0.1.0rc6</code> following the instructions <a href="https://github.com/FFTAI/Wiki-GRx-Deploy/tree/0.1.0rc6">here</a>.</p>
+<p>On the robot, install <code>fourier-grx==0.1.1rc6</code> following the instructions <a href="https://github.com/FFTAI/Wiki-GRx-Deploy/tree/0.1.1rc6">here</a>.</p>
 <h3 id="on-your-local-machine">On your local machine:<a class="headerlink" href="#on-your-local-machine" title="Permanent link">#</a></h3>
+<h4 id="install-from-pypi">Install from pypi<a class="headerlink" href="#install-from-pypi" title="Permanent link">#</a></h4>
 <p>Run:</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>fourier-grx-client<span class="o">==</span><span class="m">0</span>.2.0
 </code></pre></div></td></tr></table></div>
-<h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">#</a></h2>
-<p>First make sure you know the IP address of the robot server and the namespace it is running on. Then you can create a client object like this:
+<h4 id="install-from-source">Install from source<a class="headerlink" href="#install-from-source" title="Permanent link">#</a></h4>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
-<span class="normal">2</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kn">from</span> <span class="nn">fourier_grx_client.client</span> <span class="kn">import</span> <span class="n">RobotClient</span>
+<span class="normal">2</span>
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/FFTAI/fourier-grx-client.git
+<span class="nb">cd</span><span class="w"> </span>fourier-grx-client
+pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
+</code></pre></div></td></tr></table></div>
+<h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">#</a></h2>
+<p>First make sure you know the IP address of the robot server and the namespace it is running on. Namespace is set by the <code>--namespace</code> flag when starting the robot server.</p>
+<p>On your robot:</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>grx<span class="w"> </span>run<span class="w"> </span>./path/to/config.yaml<span class="w"> </span>--urdf-path<span class="w"> </span>./path/to/urdf_folder<span class="w"> </span>--namespace<span class="w"> </span>gr/my_awesome_robot
+</code></pre></div></td></tr></table></div>
+<p>Then on your local machine, you can create a client object like this:</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="kn">from</span> <span class="nn">fourier_grx_client</span> <span class="kn">import</span> <span class="o">*</span>
+
 <span class="n">r</span> <span class="o">=</span> <span class="n">RobotClient</span><span class="p">(</span><span class="n">namespace</span><span class="o">=</span><span class="s2">&quot;gr/my_awesome_robot&quot;</span><span class="p">,</span> <span class="n">server_ip</span><span class="o">=</span><span class="s2">&quot;192.168.6.6&quot;</span><span class="p">)</span>
-</code></pre></div></td></tr></table></div></p>
+</code></pre></div></td></tr></table></div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>For more information on the API, see the <a href="reference/api/">API Reference</a>.</p>
+</div>
+<h2 id="development">Development<a class="headerlink" href="#development" title="Permanent link">#</a></h2>
+<ol>
+<li>Install the <code>pdm</code> package manager:</li>
+</ol>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>pdm
+</code></pre></div></td></tr></table></div>
+<ol>
+<li>use <code>pdm</code> to install the package and all development dependencies:</li>
+</ol>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>pdm<span class="w"> </span>install<span class="w"> </span>-v<span class="w"> </span>-d
+</code></pre></div></td></tr></table></div>
 
 
 
@@ -709,7 +826,7 @@ The correponding server library can be found <a href="https://pypi.org/project/f
       <div class="md-copyright">
   
     <div class="md-copyright__highlight">
-      Copyright &copy; 2024 <a href="https://fourierintelligence.com/">Fourier Intelligence</a>
+      Copyright &copy; 2024 <a href="https://fourierintelligence.com/">Fourier</a>
     </div>
   
   
