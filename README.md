@@ -53,3 +53,9 @@ pip install pdm
 ```bash
 pdm install -v -d
 ```
+
+3. Install pre-commit hooks:
+
+```bash
+pre-commit install
+```
