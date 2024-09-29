@@ -686,21 +686,40 @@ class RobotClient(ZenohSession):
     def movej(
         self,
         side: Literal["left", "right"],
-        position: np.ndarray,
-        velocity: np.ndarray | None = None,
-        acceleration: np.ndarray | None = None,
-        max_velocity: np.ndarray | None = None,
-        max_acceleration: np.ndarray | None = None,
-        max_jerk: np.ndarray | None = None,
+        target_position: np.ndarray | list,
+        target_velocity: np.ndarray | list | None = None,
+        target_acceleration: np.ndarray | list | None = None,
+        max_velocity: np.ndarray | list | None = None,
+        max_acceleration: np.ndarray | list | None = None,
+        max_jerk: np.ndarray | list | None = None,
         degrees: bool = False,
     ):
+        """Move the specified arm to the target position.
+
+        Args:
+            side (Literal[&quot;left&quot;, &quot;right&quot;]): Side of the arm to move. Can be "left" or "right".
+            target_position (np.ndarray | list): Desired joint position.
+            target_velocity (np.ndarray | list | None, optional): Desired joint velocity. Defaults to None. If None, the robot will estimate the velocity based on the target position.
+            target_acceleration (np.ndarray | list | None, optional): Desired acceleration. Defaults to None.
+            max_velocity (np.ndarray | list | None, optional): Max velocity during trajectory generation. Defaults to None. If None, the robot will use the default max velocity at 5 rad/s.
+            max_acceleration (np.ndarray | list | None, optional): Max acceleration during trajectory generation. Defaults to None. If None, the robot will use the default max acceleration at 10 rad/s^2
+            max_jerk (np.ndarray | list | None, optional): Max jerk during trajectory generation. Defaults to None. If None, the robot will use the default max jerk at 50 rad/s^3
+            degrees (bool, optional): True if the input is in degrees. Defaults to False.
+        """
         if degrees:
-            position = np.deg2rad(position)
-            velocity = np.deg2rad(velocity) if velocity is not None else None
-            acceleration = np.deg2rad(acceleration) if acceleration is not None else None
+            position = np.deg2rad(target_position)
+            velocity = np.deg2rad(target_velocity) if target_velocity is not None else None
+            acceleration = np.deg2rad(target_acceleration) if target_velocity is not None else None
             max_velocity = np.deg2rad(max_velocity) if max_velocity is not None else None
             max_acceleration = np.deg2rad(max_acceleration) if max_acceleration is not None else None
             max_jerk = np.deg2rad(max_jerk) if max_jerk is not None else None
+        else:
+            position = np.asarray(target_position)
+            velocity = np.asarray(target_velocity) if target_velocity is not None else None
+            acceleration = np.asarray(target_acceleration) if target_acceleration is not None else None
+            max_velocity = np.asarray(max_velocity) if max_velocity is not None else None
+            max_acceleration = np.asarray(max_acceleration) if max_acceleration is not None else None
+            max_jerk = np.asarray(max_jerk) if max_jerk is not None else None
 
         traj = self._call_service_wait(
             "control/movej",
