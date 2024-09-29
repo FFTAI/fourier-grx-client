@@ -697,13 +697,13 @@ class RobotClient(ZenohSession):
         """Move the specified arm to the target position.
 
         Args:
-            side (Literal[&quot;left&quot;, &quot;right&quot;]): Side of the arm to move. Can be "left" or "right".
+            side (Literal["left", "right"]): Side of the arm to move. Can be "left" or "right".
             target_position (np.ndarray | list): Desired joint position.
             target_velocity (np.ndarray | list | None, optional): Desired joint velocity. Defaults to None. If None, the robot will estimate the velocity based on the target position.
             target_acceleration (np.ndarray | list | None, optional): Desired acceleration. Defaults to None.
             max_velocity (np.ndarray | list | None, optional): Max velocity during trajectory generation. Defaults to None. If None, the robot will use the default max velocity at 5 rad/s.
-            max_acceleration (np.ndarray | list | None, optional): Max acceleration during trajectory generation. Defaults to None. If None, the robot will use the default max acceleration at 10 rad/s^2
-            max_jerk (np.ndarray | list | None, optional): Max jerk during trajectory generation. Defaults to None. If None, the robot will use the default max jerk at 50 rad/s^3
+            max_acceleration (np.ndarray | list | None, optional): Max acceleration during trajectory generation. Defaults to None. If None, the robot will use the default max acceleration at 10 rad/s^2.
+            max_jerk (np.ndarray | list | None, optional): Max jerk during trajectory generation. Defaults to None. If None, the robot will use the default max jerk at 50 rad/s^3.
             degrees (bool, optional): True if the input is in degrees. Defaults to False.
         """
         if degrees:
