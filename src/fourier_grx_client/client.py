@@ -141,6 +141,11 @@ class RobotClient(ZenohSession):
                 priority=zenoh.Priority.REAL_TIME(),
                 congestion_control=zenoh.CongestionControl.DROP(),
             ),
+            "impedance": self.session.declare_publisher(
+                keyexpr=f"{self.prefix}/control/impedance",
+                priority=zenoh.Priority.REAL_TIME(),
+                congestion_control=zenoh.CongestionControl.DROP(),
+            ),
             # TODO: for continuous ik target
             # "ik_target": self.session.declare_publisher(
             #     keyexpr=f"{self.prefix}/control/ik_target",
@@ -621,6 +626,7 @@ class RobotClient(ZenohSession):
             duration (float, optional): Time duration in seconds. If set to 0, the joints will move in their maximum speed without interpolation. Defaults to 0.0.
             degrees (bool, optional): Whether the joint positions are in degrees. Defaults to False.
             blocking (bool, optional): If True, block until the move is completed. Defaults to True.
+            gravity_compensation (bool, optional): Whether to enable gravity compensation. Defaults to False.
         """
         positions = np.deg2rad(positions) if degrees else np.asarray(positions)
         dest_pos = self.joint_positions.copy()
@@ -643,6 +649,11 @@ class RobotClient(ZenohSession):
 
         if self.is_moving:
             logger.warning("Move already in progress, abort.")
+            return
+
+        if gravity_compensation:
+            with self._move_lock:
+                self._publish("impedance", Serde.pack({"position": positions}))
             return
 
         if duration == 0:
