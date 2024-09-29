@@ -1,11 +1,21 @@
 ## Release v0.2.0 (Unreleased)
 
+### ❗ Breaking Changes
+
+- All user-facing interfaces no default to use radians instead of degrees.
+- URDF now loads from [Wiki-GRx-Models](https://github.com/FFTAI/Wiki-GRx-Models) via [fourier-robot-descriptions](https://pypi.org/project/fourier-robot-descriptions/) package.
+- Nameing convention for all links and joints are now consistent with the URDF.
+- Config file structure changed
+
 ### 🚀 Features
 
 - Robot namespace support
 - `control_joints` API in velocity mode and current mode
 - forward kinematcs and inverse kinematics API
 - gravity compensation API
+- `movej` API
+
+
 
 ### 💪 Enhancements
 
