@@ -20,7 +20,7 @@
     
     
       
-        <title>grx CLI Reference - Fourier GRX Client</title>
+        <title>grx - Fourier GRX Client</title>
       
     
     
@@ -76,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#grx-cli-reference" class="md-skip">
+        <a href="#grx" class="md-skip">
           Skip to content
         </a>
       
@@ -115,7 +115,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              grx CLI Reference
+              grx
             
           </span>
         </div>
@@ -462,15 +462,90 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    grx
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
-    grx CLI Reference
+    grx
   </span>
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#grx-calibrate" class="md-nav__link">
+    <span class="md-ellipsis">
+      grx calibrate
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#grx-disable" class="md-nav__link">
+    <span class="md-ellipsis">
+      grx disable
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#grx-enable" class="md-nav__link">
+    <span class="md-ellipsis">
+      grx enable
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#grx-run" class="md-nav__link">
+    <span class="md-ellipsis">
+      grx run
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#grx-states" class="md-nav__link">
+    <span class="md-ellipsis">
+      grx states
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -545,6 +620,59 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#grx-calibrate" class="md-nav__link">
+    <span class="md-ellipsis">
+      grx calibrate
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#grx-disable" class="md-nav__link">
+    <span class="md-ellipsis">
+      grx disable
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#grx-enable" class="md-nav__link">
+    <span class="md-ellipsis">
+      grx enable
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#grx-run" class="md-nav__link">
+    <span class="md-ellipsis">
+      grx run
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#grx-states" class="md-nav__link">
+    <span class="md-ellipsis">
+      grx states
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -561,11 +689,6 @@
   
 
 
-<h1 id="grx-cli-reference"><code>grx</code> CLI Reference<a class="headerlink" href="#grx-cli-reference" title="Permanent link">#</a></h1>
-<div class="admonition warning">
-<p class="admonition-title">Attention</p>
-<p>The <code>grx</code> CLI is installed with the <code>fourier-grx</code> package,  which is only comaptible with <code>python==3.11</code>. It is intended to be running onboard the robot. Make sure to install the package before using the CLI.</p>
-</div>
 <h1 id="grx"><code>grx</code><a class="headerlink" href="#grx" title="Permanent link">#</a></h1>
 <p><strong>Usage</strong>:</p>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="gp">$ </span>grx<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
@@ -578,14 +701,44 @@
 </ul>
 <p><strong>Commands</strong>:</p>
 <ul>
-<li><code>run</code>: Run the robot server.</li>
-<li><code>states</code>: Print the current robot states.</li>
 <li><code>calibrate</code>: Calibrate the robot sensors and save the...</li>
 <li><code>disable</code>: Disable all the motors.</li>
 <li><code>enable</code>: Enable all the motors.</li>
-<li><code>generate-sensor-offset</code>: Generate sensor offset file from the...</li>
 <li><code>run</code>: Run the robot server.</li>
 <li><code>states</code>: Print the current robot states.</li>
+</ul>
+<h2 id="grx-calibrate"><code>grx calibrate</code><a class="headerlink" href="#grx-calibrate" title="Permanent link">#</a></h2>
+<p>Calibrate the robot sensors and save the offsets to a file</p>
+<p><strong>Usage</strong>:</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="gp">$ </span>grx<span class="w"> </span>calibrate<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
+</code></pre></div></td></tr></table></div>
+<p><strong>Options</strong>:</p>
+<ul>
+<li><code>--namespace TEXT</code>: Namespace for the robot</li>
+<li><code>--ip TEXT</code>: IP address of the robot server.  [default: localhost]</li>
+<li><code>--help</code>: Show this message and exit.</li>
+</ul>
+<h2 id="grx-disable"><code>grx disable</code><a class="headerlink" href="#grx-disable" title="Permanent link">#</a></h2>
+<p>Disable all the motors.</p>
+<p><strong>Usage</strong>:</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="gp">$ </span>grx<span class="w"> </span>disable<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
+</code></pre></div></td></tr></table></div>
+<p><strong>Options</strong>:</p>
+<ul>
+<li><code>--namespace TEXT</code>: Namespace for the robot</li>
+<li><code>--ip TEXT</code>: IP address of the robot server.  [default: localhost]</li>
+<li><code>--help</code>: Show this message and exit.</li>
+</ul>
+<h2 id="grx-enable"><code>grx enable</code><a class="headerlink" href="#grx-enable" title="Permanent link">#</a></h2>
+<p>Enable all the motors.</p>
+<p><strong>Usage</strong>:</p>
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="gp">$ </span>grx<span class="w"> </span><span class="nb">enable</span><span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
+</code></pre></div></td></tr></table></div>
+<p><strong>Options</strong>:</p>
+<ul>
+<li><code>--namespace TEXT</code>: Namespace for the robot</li>
+<li><code>--ip TEXT</code>: IP address of the robot server.  [default: localhost]</li>
+<li><code>--help</code>: Show this message and exit.</li>
 </ul>
 <h2 id="grx-run"><code>grx run</code><a class="headerlink" href="#grx-run" title="Permanent link">#</a></h2>
 <p>Run the robot server.</p>
@@ -599,10 +752,9 @@
 <p><strong>Options</strong>:</p>
 <ul>
 <li><code>--namespace TEXT</code>: Namespace for the robot</li>
-<li><code>--namespace TEXT</code>: Namespace for the robot  [default: gr]</li>
-<li><code>--urdf-path TEXT</code>: Path to the urdf file  [default: ./urdf]</li>
 <li><code>--freq INTEGER</code>: Main loop frequency in hz. defaults to 400hz.  [default: 400]</li>
-<li><code>--verbose / --no-verbose</code>: Print internal debug info  [default: verbose]</li>
+<li><code>--verbose / --no-verbose</code>: Print internal debug info  [default: no-verbose]</li>
+<li><code>--visualize / --no-visualize</code>: Visualize the robot in meshcat  [default: no-visualize]</li>
 <li><code>--help</code>: Show this message and exit.</li>
 </ul>
 <h2 id="grx-states"><code>grx states</code><a class="headerlink" href="#grx-states" title="Permanent link">#</a></h2>
@@ -612,46 +764,8 @@
 </code></pre></div></td></tr></table></div>
 <p><strong>Options</strong>:</p>
 <ul>
-<li><code>--help</code>: Show this message and exit.</li>
-</ul>
-<h2 id="grx-calibrate"><code>grx calibrate</code><a class="headerlink" href="#grx-calibrate" title="Permanent link">#</a></h2>
-<p>Calibrate the robot sensors and save the offsets to a file</p>
-<p><strong>Usage</strong>:</p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="gp">$ </span>grx<span class="w"> </span>calibrate<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span><span class="o">[</span>OUTPUT_PATH<span class="o">]</span>
-</code></pre></div></td></tr></table></div>
-<p><strong>Arguments</strong>:</p>
-<ul>
-<li><code>[OUTPUT_PATH]</code>: Path to the output file  [default: sensor_offsets.json]</li>
-</ul>
-<p><strong>Options</strong>:</p>
-<ul>
-<li><code>--help</code>: Show this message and exit.</li>
-</ul>
-<h2 id="grx-disable"><code>grx disable</code><a class="headerlink" href="#grx-disable" title="Permanent link">#</a></h2>
-<p>Disable all the motors.</p>
-<p><strong>Usage</strong>:</p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="gp">$ </span>grx<span class="w"> </span>disable<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
-</code></pre></div></td></tr></table></div>
-<p><strong>Options</strong>:</p>
-<ul>
-<li><code>--help</code>: Show this message and exit.</li>
-</ul>
-<h2 id="grx-enable"><code>grx enable</code><a class="headerlink" href="#grx-enable" title="Permanent link">#</a></h2>
-<p>Enable all the motors.</p>
-<p><strong>Usage</strong>:</p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="gp">$ </span>grx<span class="w"> </span><span class="nb">enable</span><span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
-</code></pre></div></td></tr></table></div>
-<p><strong>Options</strong>:</p>
-<ul>
-<li><code>--help</code>: Show this message and exit.</li>
-</ul>
-<h2 id="grx-generate-sensor-offset"><code>grx generate-sensor-offset</code><a class="headerlink" href="#grx-generate-sensor-offset" title="Permanent link">#</a></h2>
-<p>Generate sensor offset file from the control SDK installed on the host machine, usually located at ~/RoCS/bin/pythonscripts/absAngle.json</p>
-<p><strong>Usage</strong>:</p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="gp">$ </span>grx<span class="w"> </span>generate-sensor-offset<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
-</code></pre></div></td></tr></table></div>
-<p><strong>Options</strong>:</p>
-<ul>
+<li><code>--namespace TEXT</code>: Namespace for the robot</li>
+<li><code>--ip TEXT</code>: IP address of the robot server.  [default: localhost]</li>
 <li><code>--help</code>: Show this message and exit.</li>
 </ul>
 
