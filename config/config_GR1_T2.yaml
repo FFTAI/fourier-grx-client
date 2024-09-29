@@ -8,7 +8,7 @@ log_config: false
 # - "warning": all log message except normal print info, trace info, debug info will be shown
 # - "error": all log message except normal print info, trace info, debug info, warning info will be shown
 log_level: "none" # Notice: for client use, please set log_level to "error"
-log_file: null  # "file_name" or null
+log_file: null # "file_name" or null
 
 # Control System Layer --------------------------------------------------------
 device_connected: true
@@ -33,9 +33,9 @@ robot:
 # Component Layer -------------------------------------------------------------
 sensor_usb_imu:
   usb: [
-    # must put base link imu at first
-    "/dev/ttyUSB0",
-  ]
+      # must put base link imu at first
+      "/dev/ttyUSB0",
+    ]
   comm_enable: [true]
   comm_frequency: [500]
 
@@ -153,6 +153,100 @@ fi_fse:
 
 fi_fsa:
   version: "v1"
+
+upper_impedance_controller: # config for upbody impedance controller
+  k: # stiffness
+    [
+      60.,
+      60.,
+      60.,
+      0.,
+      0.,
+      0.,
+      60.,
+      70.,
+      70.,
+      60.,
+      15.,
+      0.,
+      0.,
+      60.,
+      70.,
+      70.,
+      60.,
+      15.,
+      0.,
+      0.,
+    ]
+  b: # damping
+    [
+      5.,
+      5.,
+      5.,
+      0.,
+      0.,
+      0.,
+      5.,
+      5.,
+      5.,
+      5.,
+      1.,
+      0.,
+      0.,
+      5.,
+      5.,
+      5.,
+      5.,
+      1.,
+      0.,
+      0.,
+    ]
+  m: # mass
+    [
+      0.,
+      0.,
+      0.,
+      0.,
+      0.,
+      0.,
+      0.,
+      0.,
+      0.,
+      0.,
+      0.,
+      0.,
+      0.,
+      0.,
+      0.,
+      0.,
+      0.,
+      0.,
+      0.,
+      0.,
+    ]
+  max_effort:
+    [
+      50.,
+      50.,
+      50.,
+      50.,
+      50.,
+      50.,
+      50.,
+      50.,
+      50.,
+      50.,
+      50.,
+      50.,
+      50.,
+      50.,
+      50.,
+      50.,
+      50.,
+      50.,
+      50.,
+      50.,
+    ]
 
 robot_config:
   robot_name: GR1T2
