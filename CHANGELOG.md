@@ -1,14 +1,4 @@
-## [v0.2.1] - Unreleased
-
-### ❗ Breaking Changes
-
-- Unify joint getter naming to use plural
-
-### 🗑️ Deprecations
-
-- Deprecate `self.states` in `RobotClient` in favor of individual properties
-
-## [v0.2.0] - 2024-09-29
+## [v0.2.0] - Unreleased
 
 ### ❗ Breaking Changes
 
@@ -16,6 +6,11 @@
 - URDF now loads from [Wiki-GRx-Models](https://github.com/FFTAI/Wiki-GRx-Models) via [fourier-robot-descriptions](https://pypi.org/project/fourier-robot-descriptions/) package.
 - Nameing convention for all links and joints are now consistent with the URDF.
 - Config file structure changed
+- Unify joint getter naming to use plural （ since alpha 4 )
+
+### 🗑️ Deprecations
+
+- Deprecate `self.states` in `RobotClient` in favor of individual properties （ since alpha 4 )
 
 ### 🚀 Features
 
