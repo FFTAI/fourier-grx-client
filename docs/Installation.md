@@ -60,14 +60,10 @@ If you are using `ufw`, follow these steps to enable firewall access for the `gr
 
 1. **Install the library:**
     ```bash
-    python -m pip install fourier-grx==1.0.0a10
+    python -m pip install fourier-grx==1.0.0a12
     ```
 
 2. **Verify installation:**
     ```bash
     grx --help
     ```
-
-
-
-

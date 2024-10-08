@@ -2,7 +2,7 @@
 # fourier-grx-client
 
 This is the client library for the Fourier GRX robot.
-The correponding server library can be found [here](https://pypi.org/project/fourier-grx/1.0.0a11/).
+The correponding server library can be found [here](https://pypi.org/project/fourier-grx/1.0.0a12/).
 
 ## ❗ Breaking Changes
 
@@ -18,15 +18,15 @@ Default config file can be found under [config](https://gitee.com/FourierIntelli
 ## Installation
 
 !!! warning "Attention"
-    **This software is highly unstable and subject to change at any time. Version 0.2.0a3 is only compatible with `fourier-grx` version `v1.0.0a11` and up.**
+    **This software is highly unstable and subject to change at any time. Version 0.2.0a3 is only compatible with `fourier-grx` version `v1.0.0a12` and up.**
 
 ### On the robot
 
-On the robot, install `fourier-grx==1.0.0a11` following the instructions [here](https://github.com/FFTAI/Wiki-GRx-Deploy/tree/1.0.0a11).
+On the robot, install `fourier-grx==1.0.0a12` following the instructions [here](https://github.com/FFTAI/Wiki-GRx-Deploy/tree/1.0.0a12).
 
 ### On the robot computer:
 
-On the robot, install `fourier-grx==1.0.0a11` following the [Installation Instructions](https://gitee.com/FourierIntelligence/fourier-grx-client/blob/main/docs/Installation.md).
+On the robot, install `fourier-grx==1.0.0a12` following the [Installation Instructions](https://gitee.com/FourierIntelligence/fourier-grx-client/blob/main/docs/Installation.md).
 
 ### On other machines:
 
