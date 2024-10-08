@@ -18,7 +18,7 @@ Default config file can be found under [config](https://gitee.com/FourierIntelli
 ## Installation
 
 !!! warning "Attention"
-    **This software is highly unstable and subject to change at any time. Version 0.2.0a3 is only compatible with `fourier-grx` version `v1.0.0a13` and up.**
+    **This software is highly unstable and subject to change at any time. Version 0.2.0a5 is only compatible with `fourier-grx` version `v1.0.0a13` and up.**
 
 ### On the robot
 
@@ -39,7 +39,7 @@ If you want to control the robot from another machine, you can install the clien
 Run:
 
 ```bash
-pip install fourier-grx-client==0.2.0a3
+pip install fourier-grx-client==0.2.0a5
 
 ```
 
