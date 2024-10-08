@@ -243,19 +243,19 @@ class RobotClient(ZenohSession):
         return position
 
     @property
-    def joint_velocity(self):
+    def joint_velocities(self):
         """Get the current joint velocities of the robot. The joint velocities are in radians per second."""
         velocity = np.deg2rad(self._states["joint"]["velocity"])
         return velocity
 
     @property
-    def joint_effort(self):
+    def joint_efforts(self):
         """Get the current joint efforts of the robot."""
         effort = np.asarray(self._states["joint"]["effort"])
         return effort
 
     @property
-    def joint_current(self):
+    def joint_currents(self):
         """Get the current joint currents of the robot."""
         current = np.asarray(self._states["joint"]["current"])
         return current

@@ -1,5 +1,9 @@
 ## [v0.2.1] - Unreleased
 
+### ❗ Breaking Changes
+
+- Unify joint getter naming to use plural
+
 ### 🗑️ Deprecations
 
 - Deprecate `self.states` in `RobotClient` in favor of individual properties
