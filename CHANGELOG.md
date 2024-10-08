@@ -1,3 +1,9 @@
+## [v0.2.1] - Unreleased
+
+### 🗑️ Deprecations
+
+- Deprecate `self.states` in `RobotClient` in favor of individual properties
+
 ## [v0.2.0] - 2024-09-29
 
 ### ❗ Breaking Changes

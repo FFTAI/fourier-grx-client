@@ -94,7 +94,7 @@ class RobotClient(ZenohSession):
         self.server_connected = True
 
         # dict to store the states of the robot, updated by the subscriber callback
-        self.states: dict[str, defaultdict[str, list | None]] = {
+        self._states: dict[str, defaultdict[str, list | None]] = {
             "imu": defaultdict(lambda: None),
             "joint": defaultdict(lambda: None),
             "base": defaultdict(lambda: None),
@@ -202,10 +202,10 @@ class RobotClient(ZenohSession):
         state_value_name = str(sample.key_expr).split("/")[-1]
         state_value: list = Serde.unpack(sample.payload)
 
-        if state_value_type not in self.states:
+        if state_value_type not in self._states:
             raise ValueError(f"Unknown state type: {state_value_type}")
 
-        self.states[state_value_type][state_value_name] = state_value
+        self._states[state_value_type][state_value_name] = state_value
 
     def get_group_position(self, group: ControlGroup):
         """Get the joint positions of a group."""
@@ -239,61 +239,61 @@ class RobotClient(ZenohSession):
     @property
     def joint_positions(self):
         """Get the current joint positions of the robot. The joint positions are in radians."""
-        position = np.deg2rad(self.states["joint"]["position"])
+        position = np.deg2rad(self._states["joint"]["position"])
         return position
 
     @property
     def joint_velocity(self):
         """Get the current joint velocities of the robot. The joint velocities are in radians per second."""
-        velocity = np.deg2rad(self.states["joint"]["velocity"])
+        velocity = np.deg2rad(self._states["joint"]["velocity"])
         return velocity
 
     @property
     def joint_effort(self):
         """Get the current joint efforts of the robot."""
-        effort = np.asarray(self.states["joint"]["effort"])
+        effort = np.asarray(self._states["joint"]["effort"])
         return effort
 
     @property
     def joint_current(self):
         """Get the current joint currents of the robot."""
-        current = np.asarray(self.states["joint"]["current"])
+        current = np.asarray(self._states["joint"]["current"])
         return current
 
     @property
     def imu_quaternion(self):
         """Get the current IMU orientation as a quaternion."""
-        quat = np.asarray(self.states["imu"]["quat"])
+        quat = np.asarray(self._states["imu"]["quat"])
         return quat
 
     @property
     def imu_angles(self):
         """Get the current IMU orientation as Euler angles."""
-        euler_angle = np.asarray(self.states["imu"]["euler_angle"])
+        euler_angle = np.asarray(self._states["imu"]["euler_angle"])
         return euler_angle
 
     @property
     def imu_angular_velocity(self):
         """Get the current IMU angular velocity."""
-        angular_velocity = np.asarray(self.states["imu"]["angular_velocity"])
+        angular_velocity = np.asarray(self._states["imu"]["angular_velocity"])
         return angular_velocity
 
     @property
     def imu_linear_acceleration(self):
         """Get the current IMU linear acceleration."""
-        acceleration = np.asarray(self.states["imu"]["acceleration"])
+        acceleration = np.asarray(self._states["imu"]["acceleration"])
         return acceleration
 
     @property
     def base_pose(self):
         """Get the current base pose."""
-        estimate_xyz = np.asarray(self.states["base"]["estimate_xyz"])
+        estimate_xyz = np.asarray(self._states["base"]["estimate_xyz"])
         return estimate_xyz
 
     @property
     def base_velocity(self):
         """Get the current base velocity."""
-        estimate_xyz_vel = np.asarray(self.states["base"]["estimate_xyz_vel"])
+        estimate_xyz_vel = np.asarray(self._states["base"]["estimate_xyz_vel"])
         return estimate_xyz_vel
 
     @property
