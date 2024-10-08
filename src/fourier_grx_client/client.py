@@ -226,15 +226,15 @@ class RobotClient(ZenohSession):
 
     def get_group_velocity(self, group: ControlGroup):
         """Get the joint velocities of a group."""
-        return self.joint_velocity[group.slice].copy()
+        return self.joint_velocities[group.slice].copy()
 
     def get_group_current(self, group: ControlGroup):
         """Get the joint currents of a group."""
-        return self.joint_current[group.slice].copy()
+        return self.joint_currents[group.slice].copy()
 
     def get_group_effort(self, group: ControlGroup):
         """Get the joint efforts of a group."""
-        return self.joint_effort[group.slice].copy()
+        return self.joint_efforts[group.slice].copy()
 
     @property
     def joint_positions(self):
