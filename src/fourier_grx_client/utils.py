@@ -5,8 +5,31 @@ from typing import Any
 import msgpack
 import msgpack_numpy as m
 import numpy as np
+from scipy.spatial.transform import Rotation as R
 
 m.patch()
+
+
+def se3_to_xyzquat(se3):
+    translation = se3[:3, 3]
+    rotmat = se3[:3, :3]
+
+    quat = R.from_matrix(rotmat.copy()).as_quat()
+
+    xyzquat = np.concatenate([translation, quat])
+    return xyzquat
+
+
+def xyzquat_to_se3(xyzquat):
+    translation = xyzquat[:3]
+    quat = xyzquat[3:]
+
+    rotmat = R.from_quat(quat).as_matrix()
+
+    se3 = np.eye(4)
+    se3[:3, :3] = rotmat
+    se3[:3, 3] = translation
+    return se3
 
 
 class ControlMode(IntEnum):

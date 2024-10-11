@@ -19,6 +19,8 @@
 - forward kinematcs and inverse kinematics API
 - Add gravity compensation option to `move_joints`
 - `movej` API
+- `movel` API (since a6)
+- `move` and `movej` now support gravity compensation
 
 
 ### 💪 Enhancements

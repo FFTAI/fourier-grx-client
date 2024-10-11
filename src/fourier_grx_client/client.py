@@ -18,7 +18,7 @@ from rich.progress import track
 
 from .constants import DEFAULT_POSITIONS
 from .exceptions import FourierConnectionError, FourierValueError
-from .utils import ControlGroup, ControlMode, Serde, Trajectory
+from .utils import ControlGroup, ControlMode, Serde, Trajectory, se3_to_xyzquat
 from .zenoh_utils import ZenohSession
 
 m.patch()
@@ -426,18 +426,18 @@ class RobotClient(ZenohSession):
             self._publish("current", commands)
         return
 
-    def forward_kinematics(self, chain_names: list[str], q: np.ndarray | None = None):
-        """Get the end effector pose of the specified chains.
+    def forward_kinematics(self, chain_names: list[str], q: np.ndarray | None = None) -> list[np.ndarray]:
+        """Get the end effector pose of the specified chains in base_link frame.
 
         !!! info
-            The available chain names are: `head`, `left_arm`, `right_arm`, with corresponding end effector frames: `head_yaw_link`, `left_end_effector_link`, `right_end_effector_link`, and the transformation matrices are in the `torso_link` frame.
+            The available chain names are: `head`, `left_arm`, `right_arm`, with corresponding end effector frames: `head_yaw_link`, `left_end_effector_link`, `right_end_effector_link`, and the transformation matrices are in the `base_link` frame.
 
         Args:
             chain_names (list[str]): The chains to get the end effector pose of. Available chain names: 'head', 'left_arm', 'right_arm'.
             q (np.ndarray, optional): The robot confiuration to do forward kinematics in. Defaults to None.
 
         Returns:
-            list: The end effector pose is a list of 4x4 transformation matrices. The order of the matrices is the same as the order of the chain names.
+            list: The end effector pose is a list of 4x4 transformation matrices. The order of the matrices is the same as the order of the chain names. The transformation matrix is in the `base_link` frame.
         """
 
         res = self._call_service_wait(
@@ -447,7 +447,7 @@ class RobotClient(ZenohSession):
         )
 
         logger.debug(f"FK result for {chain_names}: {res}")
-        return res
+        return res  # type: ignore
 
     def inverse_kinematics(
         self,
@@ -458,11 +458,11 @@ class RobotClient(ZenohSession):
         velocity_scaling_factor: float = 1.0,
         convergence_threshold: float = 1e-8,
     ):
-        """Get the joint positions for the specified chains to reach the target pose.
+        """Get the joint positions for the specified chains to reach the target pose in base_link frame.
 
         Args:
             chain_names (list[str]): The chains to get the joint positions for. Available chain names: 'head', 'left_arm', 'right_arm'.
-            targets (list[np.ndarray]): The target poses.
+            targets (list[np.ndarray]): The target poses in base_link frame.
             move (bool, optional): Whether to move the robot to the target pose. Defaults to False.
             dt (float): The time step for the inverse kinematics.
 
@@ -683,6 +683,76 @@ class RobotClient(ZenohSession):
         else:
             task()
 
+    def movel(
+        self,
+        sides: list[Literal["left", "right"]],
+        target_poses: list[np.ndarray | list],
+        max_velocity: float | None = None,
+        max_acceleration: float | None = None,
+        max_jerk: float | None = None,
+        move: bool = False,
+    ):
+        """Move the specified arm to the target position.
+
+        Args:
+            sides (list[Literal["left", "right"]]): Sides of the arms to move. Can be "left" or "right".
+            target_poses (list[np.ndarray | list]): Desired end effector poses.
+            max_velocity (float | None, optional): Max velocity during trajectory generation. Defaults to None.
+            max_acceleration (float | None, optional): Max acceleration during trajectory generation. Defaults to None.
+            max_jerk (float | None, optional): Max jerk during trajectory generation. Defaults to None.
+            move (bool, optional): Whether to execute the trajectory. Defaults to False.
+
+        Return:
+            list: The trajectory to reach the target pose.
+        """
+
+        curr_poses = self.forward_kinematics([f"{side}_arm" for side in sides])
+        curr_poses = [se3_to_xyzquat(pose.copy()) for pose in curr_poses]
+
+        traj = []
+        start = time.time()
+
+        for i, target_pose in enumerate(target_poses):
+            if target_pose.shape == (4, 4):
+                target_poses[i] = se3_to_xyzquat(target_pose)
+
+        traj: list[np.ndarray] = self._call_service_wait(
+            "control/movel",
+            value=Serde.pack(
+                {
+                    "sides": sides,
+                    "start_poses": curr_poses,
+                    "end_poses": target_poses,
+                    "max_velocity": max_velocity,
+                    "max_acceleration": max_acceleration,
+                    "max_jerk": max_jerk,
+                    "dt": self.ctrl_dt,
+                }
+            ),
+            timeout=1000,
+        )  # type: ignore
+
+        print(f"Time: {time.time() - start}")
+
+        if move:
+            with self._move_lock:
+                for pos in track(
+                    traj,
+                    description="Moving...",
+                    total=len(traj),
+                ):
+                    if self._abort_event.is_set():
+                        self._abort_event.clear()
+                        break
+                    dest_pos = self.joint_positions.copy()
+                    dest_pos[ControlGroup.WAIST.slice] = pos[ControlGroup.WAIST.slice]
+                    dest_pos[-14:] = pos[-14:]
+
+                    self._publish("impedance", Serde.pack({"position": dest_pos}))
+                    time.sleep(self.ctrl_dt)
+
+        return traj
+
     def movej(
         self,
         side: Literal["left", "right"],
@@ -693,8 +763,9 @@ class RobotClient(ZenohSession):
         max_acceleration: np.ndarray | list | None = None,
         max_jerk: np.ndarray | list | None = None,
         degrees: bool = False,
+        move: bool = False,
     ):
-        """Move the specified arm to the target position.
+        """move the specified arm to the target position.
 
         Args:
             side (Literal["left", "right"]): Side of the arm to move. Can be "left" or "right".
@@ -705,6 +776,10 @@ class RobotClient(ZenohSession):
             max_acceleration (np.ndarray | list | None, optional): Max acceleration during trajectory generation. Defaults to None. If None, the robot will use the default max acceleration at 10 rad/s^2.
             max_jerk (np.ndarray | list | None, optional): Max jerk during trajectory generation. Defaults to None. If None, the robot will use the default max jerk at 50 rad/s^3.
             degrees (bool, optional): True if the input is in degrees. Defaults to False.
+            move (bool, optional): Whether to execute the trajectory. Defaults to False.
+
+        Returns:
+            np.ndarray: The joint positions to reach the target pose (in radians).
         """
         if degrees:
             position = np.deg2rad(target_position)
@@ -740,23 +815,26 @@ class RobotClient(ZenohSession):
             logger.warning("Failed to generate trajectory.")
             return
 
-        with self._move_lock:
-            for pos, _ in track(
-                traj,
-                description="Moving...",
-                total=len(traj),
-            ):
-                if self._abort_event.is_set():
-                    self._abort_event.clear()
-                    break
-                dest_pos = self.joint_positions.copy()
+        if move:
+            with self._move_lock:
+                for pos, _ in track(
+                    traj,
+                    description="Moving...",
+                    total=len(traj),
+                ):
+                    if self._abort_event.is_set():
+                        self._abort_event.clear()
+                        break
+                    dest_pos = self.joint_positions.copy()
 
-                if side == "left":
-                    dest_pos[ControlGroup.LEFT_ARM.slice] = pos
-                else:
-                    dest_pos[ControlGroup.RIGHT_ARM.slice] = pos
-                self._publish("position", dest_pos)
-                time.sleep(self.ctrl_dt)
+                    if side == "left":
+                        dest_pos[ControlGroup.LEFT_ARM.slice] = pos
+                    else:
+                        dest_pos[ControlGroup.RIGHT_ARM.slice] = pos
+                    self._publish("impedance", Serde.pack({"position": dest_pos}))
+                    time.sleep(self.ctrl_dt)
+
+        return traj
 
     def abort(self):
         self._abort_event.set()
