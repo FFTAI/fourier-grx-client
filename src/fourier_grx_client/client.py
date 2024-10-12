@@ -734,6 +734,10 @@ class RobotClient(ZenohSession):
 
         print(f"Time: {time.time() - start}")
 
+        if traj is None:
+            logger.warning("Failed to generate trajectory.")
+            return
+
         if move:
             with self._move_lock:
                 for pos in track(
