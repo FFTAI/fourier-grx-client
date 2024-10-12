@@ -17,11 +17,11 @@ Default config file can be found under [config](config/) directory.
 ## Installation
 
 
-> **This software is highly unstable and subject to change at any time. Version 0.2.0a5 is only compatible with `fourier-grx` version `v1.0.0a13` and up.**
+> **This software is highly unstable and subject to change at any time. Version 0.2.0a6 is only compatible with `fourier-grx` version `v1.0.0a14` and up.**
 
 ### On the robot computer:
 
-On the robot, install `fourier-grx==1.0.0a13` following the [Installation Instructions](docs/Installation.md).
+On the robot, install `fourier-grx==1.0.0a14` following the [Installation Instructions](docs/Installation.md).
 
 ### On other machines:
 
@@ -34,7 +34,7 @@ If you want to control the robot from another machine, you can install the clien
 Run:
 
 ```bash
-pip install fourier-grx-client==0.2.0a5
+pip install fourier-grx-client==0.2.0a6
 
 ```
 

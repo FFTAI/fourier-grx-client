@@ -457,7 +457,7 @@ class RobotClient(ZenohSession):
         dt: float = 0.005,
         velocity_scaling_factor: float = 1.0,
         convergence_threshold: float = 1e-8,
-    ):
+    ) -> np.ndarray:
         """Get the joint positions for the specified chains to reach the target pose in base_link frame.
 
         Args:
@@ -686,21 +686,21 @@ class RobotClient(ZenohSession):
     def movel(
         self,
         sides: list[Literal["left", "right"]],
-        target_poses: list[np.ndarray | list],
+        target_poses: list[np.ndarray],
         max_velocity: float | None = None,
         max_acceleration: float | None = None,
         max_jerk: float | None = None,
-        move: bool = False,
+        move: bool = True,
     ):
         """Move the specified arm to the target position.
 
         Args:
             sides (list[Literal["left", "right"]]): Sides of the arms to move. Can be "left" or "right".
-            target_poses (list[np.ndarray | list]): Desired end effector poses.
+            target_poses (list[np.ndarray]): Desired end effector poses.
             max_velocity (float | None, optional): Max velocity during trajectory generation. Defaults to None.
             max_acceleration (float | None, optional): Max acceleration during trajectory generation. Defaults to None.
             max_jerk (float | None, optional): Max jerk during trajectory generation. Defaults to None.
-            move (bool, optional): Whether to execute the trajectory. Defaults to False.
+            move (bool, optional): Whether to execute the trajectory. Defaults to True.
 
         Return:
             list: The trajectory to reach the target pose.
@@ -747,8 +747,7 @@ class RobotClient(ZenohSession):
                     dest_pos = self.joint_positions.copy()
                     dest_pos[ControlGroup.WAIST.slice] = pos[ControlGroup.WAIST.slice]
                     dest_pos[-14:] = pos[-14:]
-
-                    self._publish("impedance", Serde.pack({"position": dest_pos}))
+                    self._publish("position", dest_pos)
                     time.sleep(self.ctrl_dt)
 
         return traj
@@ -763,7 +762,7 @@ class RobotClient(ZenohSession):
         max_acceleration: np.ndarray | list | None = None,
         max_jerk: np.ndarray | list | None = None,
         degrees: bool = False,
-        move: bool = False,
+        move: bool = True,
     ):
         """move the specified arm to the target position.
 
@@ -776,7 +775,7 @@ class RobotClient(ZenohSession):
             max_acceleration (np.ndarray | list | None, optional): Max acceleration during trajectory generation. Defaults to None. If None, the robot will use the default max acceleration at 10 rad/s^2.
             max_jerk (np.ndarray | list | None, optional): Max jerk during trajectory generation. Defaults to None. If None, the robot will use the default max jerk at 50 rad/s^3.
             degrees (bool, optional): True if the input is in degrees. Defaults to False.
-            move (bool, optional): Whether to execute the trajectory. Defaults to False.
+            move (bool, optional): Whether to execute the trajectory. Defaults to True.
 
         Returns:
             np.ndarray: The joint positions to reach the target pose (in radians).
@@ -831,7 +830,7 @@ class RobotClient(ZenohSession):
                         dest_pos[ControlGroup.LEFT_ARM.slice] = pos
                     else:
                         dest_pos[ControlGroup.RIGHT_ARM.slice] = pos
-                    self._publish("impedance", Serde.pack({"position": dest_pos}))
+                    self._publish("position", dest_pos)
                     time.sleep(self.ctrl_dt)
 
         return traj
