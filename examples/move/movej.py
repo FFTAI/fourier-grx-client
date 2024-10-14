@@ -22,8 +22,9 @@ def main():
         logger.success("Left arm joints returned to home position")
         time.sleep(1)
         
-        target = [-0.23, 0.2, 0.22, 0.1, 0.8, 0.0, 0.0]
-        client.movej('left',target)
+        # Move the joints of the left arm to a target position using movej
+        target_position  = [-0.23, 0.2, 0.22, 0.1, 0.8, 0.0, 0.0]
+        client.movej('left',target_position)
         logger.success("Left arm joints moved to target position")
         time.sleep(1)
         
