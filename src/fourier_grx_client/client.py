@@ -691,7 +691,7 @@ class RobotClient(ZenohSession):
         max_acceleration: float | None = None,
         max_jerk: float | None = None,
         move: bool = True,
-    ):
+    )->list[np.ndarray]:
         """Move the specified arm to the target position.
 
         Args:
@@ -709,14 +709,13 @@ class RobotClient(ZenohSession):
         curr_poses = self.forward_kinematics([f"{side}_arm" for side in sides])
         curr_poses = [se3_to_xyzquat(pose.copy()) for pose in curr_poses]
 
-        traj = []
         start = time.time()
 
         for i, target_pose in enumerate(target_poses):
             if target_pose.shape == (4, 4):
                 target_poses[i] = se3_to_xyzquat(target_pose)
 
-        traj: list[np.ndarray] = self._call_service_wait(
+        traj = self._call_service_wait(
             "control/movel",
             value=Serde.pack(
                 {
@@ -733,7 +732,7 @@ class RobotClient(ZenohSession):
         )  # type: ignore
 
         print(f"Time: {time.time() - start}")
-
+        print(len(traj))
         if traj is None:
             logger.warning("Failed to generate trajectory.")
             return
@@ -758,55 +757,53 @@ class RobotClient(ZenohSession):
 
     def movej(
         self,
-        side: Literal["left", "right"],
-        target_position: np.ndarray | list,
-        target_velocity: np.ndarray | list | None = None,
-        target_acceleration: np.ndarray | list | None = None,
-        max_velocity: np.ndarray | list | None = None,
-        max_acceleration: np.ndarray | list | None = None,
-        max_jerk: np.ndarray | list | None = None,
+        sides: list[Literal["left", "right"]],
+        target_positions: list[np.ndarray | list],
+        target_velocity: list[np.ndarray | list] | None = None,
+        target_acceleration: list[np.ndarray | list] | None = None,
+        max_velocity: list[np.ndarray | list] | None = None,
+        max_acceleration: list[np.ndarray | list] | None = None,
+        max_jerk: list[np.ndarray | list] | None = None,
         degrees: bool = False,
         move: bool = True,
-    ):
-        """move the specified arm to the target position.
+    )-> list[list[np.ndarray]]:
+        """move the joints of the arms to the target position.
 
         Args:
-            side (Literal["left", "right"]): Side of the arm to move. Can be "left" or "right".
-            target_position (np.ndarray | list): Desired joint position.
-            target_velocity (np.ndarray | list | None, optional): Desired joint velocity. Defaults to None. If None, the robot will estimate the velocity based on the target position.
-            target_acceleration (np.ndarray | list | None, optional): Desired acceleration. Defaults to None.
-            max_velocity (np.ndarray | list | None, optional): Max velocity during trajectory generation. Defaults to None. If None, the robot will use the default max velocity at 5 rad/s.
-            max_acceleration (np.ndarray | list | None, optional): Max acceleration during trajectory generation. Defaults to None. If None, the robot will use the default max acceleration at 10 rad/s^2.
-            max_jerk (np.ndarray | list | None, optional): Max jerk during trajectory generation. Defaults to None. If None, the robot will use the default max jerk at 50 rad/s^3.
+            sides (list[Literal["left", "right"]]): Sides of the arms to move. Can be "left" or "right".
+            target_positions (list[np.ndarray | list]): Desired joint positions.
+            target_velocity (list[np.ndarray | list] | None, optional): Desired joint velocities. Defaults to None. If None, the robot will estimate the velocity based on the target position.
+            target_acceleration (list[np.ndarray | list] | None, optional): Desired accelerations. Defaults to None.
+            max_velocity (list[np.ndarray | list] | None, optional): Max velocity during trajectory generation. Defaults to None. If None, the robot will use the default max velocity at 5 rad/s.
+            max_acceleration (list[np.ndarray | list] | None, optional): Max acceleration during trajectory generation. Defaults to None. If None, the robot will use the default max acceleration at 10 rad/s^2.
+            max_jerk (list[np.ndarray | list] | None, optional): Max jerk during trajectory generation. Defaults to None. If None, the robot will use the default max jerk at 50 rad/s^3.
             degrees (bool, optional): True if the input is in degrees. Defaults to False.
             move (bool, optional): Whether to execute the trajectory. Defaults to True.
-
+        
         Returns:
-            np.ndarray: The joint positions to reach the target pose (in radians).
+            list: The trajectory of joint positions and velocities for controlled arms to reach the target pose.
         """
-        if degrees:
-            position = np.deg2rad(target_position)
-            velocity = np.deg2rad(target_velocity) if target_velocity is not None else None
-            acceleration = np.deg2rad(target_acceleration) if target_velocity is not None else None
-            max_velocity = np.deg2rad(max_velocity) if max_velocity is not None else None
-            max_acceleration = np.deg2rad(max_acceleration) if max_acceleration is not None else None
-            max_jerk = np.deg2rad(max_jerk) if max_jerk is not None else None
-        else:
-            position = np.asarray(target_position)
-            velocity = np.asarray(target_velocity) if target_velocity is not None else None
-            acceleration = np.asarray(target_acceleration) if target_acceleration is not None else None
-            max_velocity = np.asarray(max_velocity) if max_velocity is not None else None
-            max_acceleration = np.asarray(max_acceleration) if max_acceleration is not None else None
-            max_jerk = np.asarray(max_jerk) if max_jerk is not None else None
+        for i, side in enumerate(sides):
+            target_positions[i] = np.deg2rad(target_positions[i]) if degrees else np.asarray(target_positions[i])
+            if target_velocity is not None:
+                target_velocity[i] = np.deg2rad(target_velocity[i]) if degrees else np.asarray(target_velocity[i]) 
+            if target_acceleration is not None:
+                target_acceleration[i] = np.deg2rad(target_acceleration[i]) if degrees else np.asarray(target_acceleration[i]) 
+            if max_velocity is not None:
+                max_velocity[i] = np.deg2rad(max_velocity[i]) if degrees else np.asarray(max_velocity[i]) 
+            if max_acceleration is not None:
+                max_acceleration[i] = np.deg2rad(max_acceleration[i]) if degrees else np.asarray(max_acceleration[i]) 
+            if max_jerk is not None:
+                max_jerk[i] = np.deg2rad(max_jerk[i]) if degrees else np.asarray(max_jerk[i]) 
 
         traj = self._call_service_wait(
             "control/movej",
             value=Serde.pack(
                 {
-                    "side": side,
-                    "position": position,
-                    "velocity": velocity,
-                    "acceleration": acceleration,
+                    "sides": sides,
+                    "positions": target_positions,
+                    "velocity": target_velocity,
+                    "acceleration": target_acceleration,
                     "max_velocity": max_velocity,
                     "max_acceleration": max_acceleration,
                     "max_jerk": max_jerk,
@@ -817,23 +814,21 @@ class RobotClient(ZenohSession):
         if traj is None:
             logger.warning("Failed to generate trajectory.")
             return
-
+        
         if move:
             with self._move_lock:
-                for pos, _ in track(
-                    traj,
-                    description="Moving...",
-                    total=len(traj),
-                ):
+                steps = max([len(ele) for ele in traj])
+                for i in range(steps):
                     if self._abort_event.is_set():
                         self._abort_event.clear()
                         break
                     dest_pos = self.joint_positions.copy()
-
-                    if side == "left":
-                        dest_pos[ControlGroup.LEFT_ARM.slice] = pos
-                    else:
-                        dest_pos[ControlGroup.RIGHT_ARM.slice] = pos
+                    for j, side in enumerate(sides):
+                        pos = traj[j][i][0] if i<len(traj[j]) else traj[j][-1][0]
+                        if side == "left":
+                            dest_pos[ControlGroup.LEFT_ARM.slice] = pos
+                        else:
+                            dest_pos[ControlGroup.RIGHT_ARM.slice] = pos
                     self._publish("position", dest_pos)
                     time.sleep(self.ctrl_dt)
 

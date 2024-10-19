@@ -25,21 +25,21 @@ def main():
         right_arm_velocities = client.get_group_velocity(ControlGroup.RIGHT_ARM)
         logger.info(f"Right arm joint velocities: {right_arm_velocities}")
         # Get the joint velocities of the left arm using joint index
-        left_arm_velocities = client.joint_velocity[18:25]
+        left_arm_velocities = client.joint_velocities[18:25]
         logger.info(f"Left arm joint velocities: {left_arm_velocities}")
 
         # Get the joint currents of the right arm using ControlGroup
         right_arm_currents = client.get_group_current(ControlGroup.RIGHT_ARM)
         logger.info(f"Right arm joint currents: {right_arm_currents}")
         # Get the joint currents of the left arm using joint index
-        left_arm_currents = client.joint_current[18:25]
+        left_arm_currents = client.joint_currents[18:25]
         logger.info(f"Left arm joint currents: {left_arm_currents}")
 
         # Get the joint efforts of the right arm using ControlGroup
         right_arm_efforts = client.get_group_effort(ControlGroup.RIGHT_ARM)
         logger.info(f"Right arm joint efforts: {right_arm_efforts}")
         # Get the joint efforts of the left arm using joint index
-        left_arm_efforts = client.joint_effort[18:25]
+        left_arm_efforts = client.joint_efforts[18:25]
         logger.info(f"Left arm joint efforts: {left_arm_efforts}")
 
         # Close the connection to the robot server

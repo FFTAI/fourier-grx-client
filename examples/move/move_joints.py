@@ -1,6 +1,5 @@
 import sys
 import time
-
 from fourier_grx_client import ControlGroup, RobotClient
 from loguru import logger
 
@@ -8,7 +7,6 @@ from loguru import logger
 This script demonstrates how to move the joints of the robot using the fourier_grx_client.
 Before running this script, make sure to have the fourier_grx package installed and grx server running on the robot.
 """
-
 
 def main():
     # Create a RobotClient object and connect to the robot server
@@ -21,7 +19,7 @@ def main():
         time.sleep(1)
 
         # Move the joints of the left arm to home position
-        client.move_joints(ControlGroup.LEFT_ARM, [0.0] * 7, duration=1.0)
+        client.move_joints(ControlGroup.LEFT_ARM, [0.0]*7, duration=1.0)
         logger.success("Left arm joints returned to home position")
         time.sleep(1)
 
@@ -34,6 +32,11 @@ def main():
         # Move a single joint of the left arm using joint index
         client.move_joints([19], [0.3])
         logger.success("left_shoulder_roll_joint moved")
+        time.sleep(1)
+        
+        # Move the joints of the left arm to home position
+        client.move_joints(ControlGroup.LEFT_ARM, [0.0]*7, duration=1.0)
+        logger.success("Left arm joints returned to home position")
         time.sleep(1)
 
         # Disable the robot motors

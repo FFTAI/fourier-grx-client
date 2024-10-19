@@ -32,30 +32,47 @@ def main():
         logger.info("Motors enabled")
         time.sleep(1)
 
-        # Move the joints of the left arm to home position
-        client.move_joints(ControlGroup.LEFT_ARM, [0.0]*7, duration=1.0)
-        logger.success("Left arm joints returned to home position")
+        # Move the joints of arms to home position
+        client.move_joints(ControlGroup.UPPER, [0.0]*14, duration=1.0)
+        logger.success("Arm joints returned to home position")
         time.sleep(1)
 
-        # Move the left arm to a target cartesian position using movel 
-        target_position_array = np.array([[ 0.079, -0.067, -0.995,  0.292],
-        [-0.995,  0.056, -0.082,  0.124],
-        [ 0.062,  0.996, -0.063,  0.122],
-        [ 0.   ,  0.   ,  0.   ,  1.   ]])
-        client.movel(["left"],[target_position_array])
-        logger.success("Left arm joints moved to target cartesian position")
+        # Prepare the target cartesian positions
+        sides = ["left", "right"]
+        target_position_array_left = np.array([[ 0.43, 0.6, -0.68, 0.22],
+                                        [-0.89, 0.38, -0.23, 0.32],
+                                        [0.12, 0.7, 0.7, 0.01],
+                                        [0.0, 0.0, 0.0, 1.0]])
+        target_position_array_right = np.array([[ 0.9, -0.16, -0.41, 0.07],
+                                        [0.36, 0.82, 0.46, -0.34],
+                                        [0.26, -0.56, 0.79, -0.05],
+                                        [0.0, 0.0, 0.0, 1.0]])
+        target_pose = [target_position_array_left, target_position_array_right]
+
+        # Move the arms to target cartesian positions using movel 
+        client.movel(sides, target_pose)
+        logger.success("Arm joints moved to target cartesian positions")
         time.sleep(1)
 
-        # Move the joints of the left arm to home position
-        client.move_joints(ControlGroup.LEFT_ARM, [0.0]*7, duration=1.0)
-        logger.success("Left arm joints returned to home position")
+        # Move the joints of arms to home position
+        client.move_joints(ControlGroup.UPPER, [0.0]*14, duration=1.0)
+        logger.success("Arm joints returned to home position")
         time.sleep(1)
 
-        # Move the left arm to a target cartesian position using movel
-        target_position = np.array(rotation_matrix_to_xyz_quat(target_position_array))
-        client.movel(["left"],[target_position])
+        # Create target cartesian positions for the arms using rotation matrix
+        target_position_left = np.array(rotation_matrix_to_xyz_quat(target_position_array_left))
+        target_position_right = np.array(rotation_matrix_to_xyz_quat(target_position_array_right))
+        target_pose = [target_position_left, target_position_right]
+        
+        # Move the arms to target cartesian positions using movel
+        client.movel(sides, target_pose)
         time.sleep(1)
-        logger.success("Left arm joints moved to target cartesian position")
+        logger.success("Arm joints moved to target cartesian positions")
+
+        # Move the joints of arms to home position
+        client.move_joints(ControlGroup.UPPER, [0.0]*14, duration=1.0)
+        logger.success("Arm joints returned to home position")
+        time.sleep(1)
 
         # Disable the robot motors
         client.disable()
