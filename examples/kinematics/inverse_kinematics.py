@@ -40,13 +40,15 @@ def main():
         logger.info(f"Left arm cartesian: {left_arm_cartesian}")
 
         # Get the inverse kinematics of the left arm using the rotation matrix
-        ik_output = client.inverse_kinematics(chain, [left_arm_fk])
+        targets = [left_arm_fk]
+        ik_output = client.inverse_kinematics(chain, targets)
         left_arm_ik = ik_output[18:25]
         logger.info(f"Left arm inverse kinematics: {left_arm_ik}")
 
         # Get the inverse kinematics of the left arm using the cartesian pose
         left_arm_cartesian_array = np.array(left_arm_cartesian)
-        ik_output = client.inverse_kinematics(chain, [left_arm_cartesian_array])
+        targets = [left_arm_cartesian_array]
+        ik_output = client.inverse_kinematics(chain, targets)
         left_arm_ik = ik_output[18:25]
         logger.info(f"Left arm inverse kinematics: {left_arm_ik}")
 

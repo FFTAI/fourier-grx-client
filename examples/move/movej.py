@@ -7,6 +7,7 @@ import sys
 This script demonstrates how to apply joint space control using the fourier_grx_client.
 Before running this script, make sure to have the fourier_grx package installed and grx server running on the robot.
 '''
+
 def main():
     # Create a RobotClient object and connect to the robot server
     client = RobotClient(namespace="gr/my_awesome_robot", server_ip="localhost")
@@ -17,17 +18,27 @@ def main():
         logger.info("Motors enabled")
         time.sleep(1)
 
-        # Move the joints of the left arm to home position
-        client.move_joints(ControlGroup.LEFT_ARM, [0.0]*7, duration=1.0)
-        logger.success("Left arm joints returned to home position")
+        # Move the joints of arms to home position
+        client.move_joints(ControlGroup.UPPER, [0.0]*14, duration=1.0)
+        logger.success("Arm joints returned to home position")
         time.sleep(1)
         
-        # Move the joints of the left arm to a target position using movej
-        target_position  = [-0.23, 0.2, 0.22, 0.1, 0.8, 0.0, 0.0]
-        client.movej('left',target_position)
-        logger.success("Left arm joints moved to target position")
+        # Prepare the target positions for the arms
+        sides = ['left', 'right']
+        target_position_left = [-0.23, 0.2, 0.22, 0.1, 0.8, 0.0, 0.0]
+        target_position_right = [0.01, -0.07, -0.05, -0.9, 0.02, 0.0, 0.0]
+        target_positions = [target_position_left, target_position_right]
+
+        # Move the joints of the arms to target positions using movej
+        traj=client.movej(sides, target_positions)
+        logger.success("Arm joints moved to target positions")
         time.sleep(1)
-        
+
+        # Move the joints of arms to home position
+        client.move_joints(ControlGroup.UPPER, [0.0]*14, duration=1.0)
+        logger.success("Arm joints returned to home position")
+        time.sleep(1)
+
         # Disable the robot motors
         client.disable()
         logger.info("Motors disabled")

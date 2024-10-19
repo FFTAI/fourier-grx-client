@@ -9,7 +9,6 @@ This script demonstrates how to get the forward kinematics using the fourier_grx
 Before running this script, make sure to have the fourier_grx package installed and grx server running on the robot.
 """
 
-
 def rotation_matrix_to_xyz_quat(rotation_matrix: np.ndarray):
     assert rotation_matrix.shape == (4, 4), "Invalid rotation matrix shape!"
 
@@ -23,18 +22,23 @@ def rotation_matrix_to_xyz_quat(rotation_matrix: np.ndarray):
 
     return translation.tolist() + [qx, qy, qz, qw]
 
-
 def main():
     # Create a RobotClient object and connect to the robot server
     client = RobotClient(namespace="gr/my_awesome_robot", server_ip="localhost")
 
     try:
-        # Get the forward kinematics of the left arm
-        chain = ["left_arm"]
+        # Get the forward kinematics of the left arm using current joint positions
+        chain = ["right_arm"]
         fk_output = client.forward_kinematics(chain)
         left_arm_fk = fk_output[0]
         logger.info(f"Left arm forward kinematics: {left_arm_fk}")
-
+        
+        # Get the forward kinematics of the left arm using specified joint positions
+        q = client.joint_positions
+        fk_output = client.forward_kinematics(chain, q)
+        left_arm_fk = fk_output[0]
+        logger.info(f"Left arm forward kinematics: {left_arm_fk}")
+    
         # Convert the rotation matrix to xyz-quaternion
         left_arm_cartesian = rotation_matrix_to_xyz_quat(left_arm_fk)
         logger.info(f"Left arm cartesian: {left_arm_cartesian}")
