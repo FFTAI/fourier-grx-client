@@ -16,10 +16,10 @@ from loguru import logger
 from omegaconf import OmegaConf
 from rich.progress import track
 
-from .constants import DEFAULT_POSITIONS
-from .exceptions import FourierConnectionError, FourierValueError
-from .utils import ControlGroup, ControlMode, Serde, Trajectory, se3_to_xyzquat
-from .zenoh_utils import ZenohSession
+from fourier_grx_client.constants import DEFAULT_POSITIONS
+from fourier_grx_client.exceptions import FourierConnectionError, FourierValueError
+from fourier_grx_client.utils import ControlGroup, ControlMode, Serde, Trajectory, se3_to_xyzquat
+from fourier_grx_client.zenoh_utils import ZenohSession
 
 m.patch()
 
@@ -42,11 +42,11 @@ class RobotClient(ZenohSession):
     default_group_positions = {group: DEFAULT_POSITIONS[group.slice].copy() for group in ControlGroup}
 
     def __init__(
-        self,
-        freq: int = 400,
-        namespace: str | None = None,
-        server_ip: str = "localhost",
-        verbose: bool = False,
+            self,
+            freq: int = 400,
+            namespace: str | None = None,
+            server_ip: str = "localhost",
+            verbose: bool = False,
     ):
         """The client class for GR series robots.
 
@@ -173,18 +173,25 @@ class RobotClient(ZenohSession):
         robot_id = os.getenv("GRX_ROBOT_ID")
         if robot_id is not None:
             logger.info(
-                f"Loaded <blue>robot_id</blue>  from environment variable GRX_ROBOT_ID: {robot_id}. Using namespace: gr/{robot_id}"
+                f"Client Loaded <blue>robot_id</blue> "
+                f"from environment variable GRX_ROBOT_ID: {robot_id}. "
+                f"Using namespace: gr/{robot_id}"
             )
             namespace = f"gr/{robot_id}"
             return namespace
 
         id_path = Path.home() / ".fourier" / "robot_id.yaml"
-        logger.warning(f"No namespace provided, trying to load the <blue>robot_id</blue>  from {id_path}.")
+        logger.warning(
+            f"Client No namespace provided, "
+            f"trying to load the <blue>robot_id</blue>  from {id_path}."
+        )
 
         if not id_path.exists():
             namespace = "gr"
             logger.warning(
-                "No <blue>robot_id</blue> found, will use the default namespace: gr, which is <red>not recommended</red>."
+                "Client No <blue>robot_id</blue> found, "
+                "will use the default namespace: gr, "
+                "which is <red>not recommended</red>."
             )
 
             return namespace
@@ -192,7 +199,9 @@ class RobotClient(ZenohSession):
         robot_id = OmegaConf.load(id_path)["robot_id"]  # type: ignore
         namespace = f"gr/{robot_id}"
         logger.info(
-            f"Loaded <blue>robot_id</blue> from ~/.fourier/robot_id.yaml: {robot_id}. Using namespace: gr/{robot_id}"
+            f"Client Loaded <blue>robot_id</blue> "
+            f"from ~/.fourier/robot_id.yaml: {robot_id}. "
+            f"Using namespace: gr/{robot_id}"
         )
 
         return namespace
@@ -373,12 +382,12 @@ class RobotClient(ZenohSession):
         return res
 
     def set_gains(
-        self,
-        position_control_kp: list[float] | None = None,
-        velocity_control_kp: list[float] | None = None,
-        velocity_control_ki: list[float] | None = None,
-        pd_control_kp: list[float] | None = None,
-        pd_control_kd: list[float] | None = None,
+            self,
+            position_control_kp: list[float] | None = None,
+            velocity_control_kp: list[float] | None = None,
+            velocity_control_ki: list[float] | None = None,
+            pd_control_kp: list[float] | None = None,
+            pd_control_kd: list[float] | None = None,
     ):
         gains = {}
         if position_control_kp is not None and len(position_control_kp) == self.number_of_joint:
@@ -400,10 +409,10 @@ class RobotClient(ZenohSession):
         return res
 
     def control_joints(
-        self,
-        control_type: Literal["position", "velocity", "effort", "current"],
-        commands: np.ndarray | list,
-        degrees: bool = False,
+            self,
+            control_type: Literal["position", "velocity", "effort", "current"],
+            commands: np.ndarray | list,
+            degrees: bool = False,
     ):
         """Control the joints in a group with the specified control type.
 
@@ -450,13 +459,13 @@ class RobotClient(ZenohSession):
         return res  # type: ignore
 
     def inverse_kinematics(
-        self,
-        chain_names: list[str],
-        targets: list[np.ndarray],
-        move=False,
-        dt: float = 0.005,
-        velocity_scaling_factor: float = 1.0,
-        convergence_threshold: float = 1e-8,
+            self,
+            chain_names: list[str],
+            targets: list[np.ndarray],
+            move=False,
+            dt: float = 0.005,
+            velocity_scaling_factor: float = 1.0,
+            convergence_threshold: float = 1e-8,
     ) -> np.ndarray:
         """Get the joint positions for the specified chains to reach the target pose in base_link frame.
 
@@ -560,13 +569,13 @@ class RobotClient(ZenohSession):
         self._publish("position", self.joint_positions)
 
     def move_joints(
-        self,
-        group: ControlGroup | list | str,
-        positions: np.ndarray | list,
-        duration: float = 0.0,
-        degrees: bool = False,
-        blocking: bool = True,
-        gravity_compensation: bool = False,
+            self,
+            group: ControlGroup | list | str,
+            positions: np.ndarray | list,
+            duration: float = 0.0,
+            degrees: bool = False,
+            blocking: bool = True,
+            gravity_compensation: bool = False,
     ):
         """Move in joint space with time duration.
 
@@ -684,14 +693,14 @@ class RobotClient(ZenohSession):
             task()
 
     def movel(
-        self,
-        sides: list[Literal["left", "right"]],
-        target_poses: list[np.ndarray],
-        max_velocity: float | None = None,
-        max_acceleration: float | None = None,
-        max_jerk: float | None = None,
-        move: bool = True,
-    )->list[np.ndarray]:
+            self,
+            sides: list[Literal["left", "right"]],
+            target_poses: list[np.ndarray],
+            max_velocity: float | None = None,
+            max_acceleration: float | None = None,
+            max_jerk: float | None = None,
+            move: bool = True,
+    ) -> list[np.ndarray]:
         """Move the specified arm to the target position.
 
         Args:
@@ -740,9 +749,9 @@ class RobotClient(ZenohSession):
         if move:
             with self._move_lock:
                 for pos in track(
-                    traj,
-                    description="Moving...",
-                    total=len(traj),
+                        traj,
+                        description="Moving...",
+                        total=len(traj),
                 ):
                     if self._abort_event.is_set():
                         self._abort_event.clear()
@@ -756,17 +765,17 @@ class RobotClient(ZenohSession):
         return traj
 
     def movej(
-        self,
-        sides: list[Literal["left", "right"]],
-        target_positions: list[np.ndarray | list],
-        target_velocity: list[np.ndarray | list] | None = None,
-        target_acceleration: list[np.ndarray | list] | None = None,
-        max_velocity: list[np.ndarray | list] | None = None,
-        max_acceleration: list[np.ndarray | list] | None = None,
-        max_jerk: list[np.ndarray | list] | None = None,
-        degrees: bool = False,
-        move: bool = True,
-    )-> list[list[np.ndarray]]:
+            self,
+            sides: list[Literal["left", "right"]],
+            target_positions: list[np.ndarray | list],
+            target_velocity: list[np.ndarray | list] | None = None,
+            target_acceleration: list[np.ndarray | list] | None = None,
+            max_velocity: list[np.ndarray | list] | None = None,
+            max_acceleration: list[np.ndarray | list] | None = None,
+            max_jerk: list[np.ndarray | list] | None = None,
+            degrees: bool = False,
+            move: bool = True,
+    ) -> list[list[np.ndarray]]:
         """move the joints of the arms to the target position.
 
         Args:
@@ -786,15 +795,15 @@ class RobotClient(ZenohSession):
         for i, side in enumerate(sides):
             target_positions[i] = np.deg2rad(target_positions[i]) if degrees else np.asarray(target_positions[i])
             if target_velocity is not None:
-                target_velocity[i] = np.deg2rad(target_velocity[i]) if degrees else np.asarray(target_velocity[i]) 
+                target_velocity[i] = np.deg2rad(target_velocity[i]) if degrees else np.asarray(target_velocity[i])
             if target_acceleration is not None:
-                target_acceleration[i] = np.deg2rad(target_acceleration[i]) if degrees else np.asarray(target_acceleration[i]) 
+                target_acceleration[i] = np.deg2rad(target_acceleration[i]) if degrees else np.asarray(target_acceleration[i])
             if max_velocity is not None:
-                max_velocity[i] = np.deg2rad(max_velocity[i]) if degrees else np.asarray(max_velocity[i]) 
+                max_velocity[i] = np.deg2rad(max_velocity[i]) if degrees else np.asarray(max_velocity[i])
             if max_acceleration is not None:
-                max_acceleration[i] = np.deg2rad(max_acceleration[i]) if degrees else np.asarray(max_acceleration[i]) 
+                max_acceleration[i] = np.deg2rad(max_acceleration[i]) if degrees else np.asarray(max_acceleration[i])
             if max_jerk is not None:
-                max_jerk[i] = np.deg2rad(max_jerk[i]) if degrees else np.asarray(max_jerk[i]) 
+                max_jerk[i] = np.deg2rad(max_jerk[i]) if degrees else np.asarray(max_jerk[i])
 
         traj = self._call_service_wait(
             "control/movej",
@@ -814,7 +823,7 @@ class RobotClient(ZenohSession):
         if traj is None:
             logger.warning("Failed to generate trajectory.")
             return
-        
+
         if move:
             with self._move_lock:
                 steps = max([len(ele) for ele in traj])
@@ -824,7 +833,7 @@ class RobotClient(ZenohSession):
                         break
                     dest_pos = self.joint_positions.copy()
                     for j, side in enumerate(sides):
-                        pos = traj[j][i][0] if i<len(traj[j]) else traj[j][-1][0]
+                        pos = traj[j][i][0] if i < len(traj[j]) else traj[j][-1][0]
                         if side == "left":
                             dest_pos[ControlGroup.LEFT_ARM.slice] = pos
                         else:
@@ -849,9 +858,9 @@ class RobotClient(ZenohSession):
         if timestamps is None:
             with self._move_lock:
                 for pos in track(
-                    traj[1:],
-                    description="Moving...",
-                    total=len(traj) - 1,
+                        traj[1:],
+                        description="Moving...",
+                        total=len(traj) - 1,
                 ):
                     dest_pos = self.joint_positions.copy()
                     if self._abort_event.is_set():
@@ -867,9 +876,9 @@ class RobotClient(ZenohSession):
         start_time = time.time()
         with self._move_lock:
             for pos, t in track(
-                zip(traj[1:], timestamps[1:], strict=False),
-                description="Moving...",
-                total=len(traj) - 1,
+                    zip(traj[1:], timestamps[1:], strict=False),
+                    description="Moving...",
+                    total=len(traj) - 1,
             ):
                 if self._abort_event.is_set():
                     self._abort_event.clear()

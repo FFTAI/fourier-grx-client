@@ -6,7 +6,7 @@ from typing import Any
 import zenoh
 from loguru import logger
 
-from .utils import Serde
+from fourier_grx_client.utils import Serde
 
 
 def parse_reply(reply: zenoh.Reply) -> tuple[bool, Any]:
