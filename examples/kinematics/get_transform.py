@@ -20,7 +20,7 @@ def main():
 
         # Get the transformation matrix from the torso to the left arm
         target_frame = "left_end_effector_link"
-        source_frame = "torso_link"
+        source_frame = "base_link"
         transform = client.get_transform(target_frame, source_frame)
         logger.info(f"Transformation matrix from {source_frame} to {target_frame}:\n{transform}")
 

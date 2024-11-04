@@ -28,7 +28,7 @@ def main():
 
     try:
         # Get the forward kinematics of the left arm using current joint positions
-        chain = ["right_arm"]
+        chain = ["left_arm"]
         fk_output = client.forward_kinematics(chain)
         left_arm_fk = fk_output[0]
         logger.info(f"Left arm forward kinematics: {left_arm_fk}")
