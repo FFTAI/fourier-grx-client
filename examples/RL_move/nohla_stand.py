@@ -25,7 +25,7 @@ class DemoNohlaStand:
         self.act = act
         time.sleep(1.0)
 
-        self.set_gains()
+        # self.set_gains()
         self.client.set_enable(True)
 
         # algorithm
@@ -63,8 +63,11 @@ class DemoNohlaStand:
             2.575, 2.575, 3.1, 3.1, 3.1, 1.0, 1.0,  # right arm
         ])
         # fmt: on
+        self.client.set_control_modes(control_mode)
+        time.sleep(1)
+        self.client.set_gains(pd_control_kp=kp, pd_control_kd=kd)
+        time.sleep(1)
 
-        self.client.set_gains(kp, kd, control_mode=control_mode)
 
     def step(self):
         """
@@ -75,8 +78,8 @@ class DemoNohlaStand:
         """
 
         # get states
-        joint_measured_position_urdf_deg = self.client.states["joint"]["position"].copy()
-        joint_measured_velocity_urdf_deg = self.client.states["joint"]["velocity"].copy()
+        joint_measured_position_urdf = self.client.joint_positions.copy()
+        joint_measured_velocity_urdf = self.client.joint_velocities.copy()
 
         controlled_joints = self.model.index_of_joints_real_robot
 
@@ -84,8 +87,8 @@ class DemoNohlaStand:
         joint_measured_position_nohla_urdf = np.zeros(len(controlled_joints))
         joint_measured_velocity_nohla_urdf = np.zeros(len(controlled_joints))
 
-        joint_measured_position_nohla_urdf = np.deg2rad(joint_measured_position_urdf_deg)[controlled_joints]
-        joint_measured_velocity_nohla_urdf = np.deg2rad(joint_measured_velocity_urdf_deg)[controlled_joints]
+        joint_measured_position_nohla_urdf = joint_measured_position_urdf[controlled_joints]
+        joint_measured_velocity_nohla_urdf = joint_measured_velocity_urdf[controlled_joints]
 
         # run algorithm
         _, _, joint_target_position_nohla_urdf = self.model.run(
@@ -93,14 +96,13 @@ class DemoNohlaStand:
             joint_measured_velocity_urdf=joint_measured_velocity_nohla_urdf,
         )  # [rad]
 
-        joint_target_position_nohla_urdf_deg = np.rad2deg(joint_target_position_nohla_urdf)
-        joint_target_position_deg = np.zeros_like(joint_measured_position_urdf_deg)
-        joint_target_position_deg[controlled_joints] = joint_target_position_nohla_urdf_deg
+        joint_target_position = np.zeros_like(joint_measured_position_urdf)
+        joint_target_position[controlled_joints] = joint_target_position_nohla_urdf
 
         if self.act:
-            self.client.move_joints(ControlGroup.ALL, joint_target_position_deg, 0.0)
+            self.client.move_joints(ControlGroup.ALL, joint_target_position)
 
-        return joint_target_position_deg
+        return joint_target_position
 
 
 def main(step_freq: int = 100, act: bool = False):
