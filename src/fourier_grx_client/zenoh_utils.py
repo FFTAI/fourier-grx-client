@@ -181,7 +181,7 @@ class ZenohSession:
         try:
             if self.session:
                 self.session.close()
-            self.session = None  # type: ignore
+            # self.session = None  # type: ignore
         except Exception:
             pass
 
