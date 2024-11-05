@@ -186,5 +186,4 @@ class ZenohSession:
             pass
 
     def __del__(self):
-        if self.session:
-            self.close()
+        pass
