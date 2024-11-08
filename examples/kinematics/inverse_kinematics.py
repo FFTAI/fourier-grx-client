@@ -42,15 +42,13 @@ def main():
         # Get the inverse kinematics of the left arm using the rotation matrix
         targets = [left_arm_fk]
         ik_output = client.inverse_kinematics(chain, targets)
-        left_arm_ik = ik_output[18:25]
-        logger.info(f"Left arm inverse kinematics: {left_arm_ik}")
+        logger.info(f"Whole body inverse kinematics: {ik_output}")
 
         # Get the inverse kinematics of the left arm using the cartesian pose
         left_arm_cartesian_array = np.array(left_arm_cartesian)
         targets = [left_arm_cartesian_array]
         ik_output = client.inverse_kinematics(chain, targets)
-        left_arm_ik = ik_output[18:25]
-        logger.info(f"Left arm inverse kinematics: {left_arm_ik}")
+        logger.info(f"Whole body inverse kinematics: {ik_output}")
 
         # Close the connection to the robot server
         client.close()
