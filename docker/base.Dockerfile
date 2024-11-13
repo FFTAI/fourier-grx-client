@@ -1,13 +1,13 @@
 ARG UBUNTU_VERSION=20.04
-FROM ubuntu:${UBUNTU_VERSION}
+FROM 192.168.3.15:9595/mirror/ubuntu:${UBUNTU_VERSION}
 
-ARG PYTHON_VERSION=3.10
+ARG PYTHON_VERSION=3.11
 ARG DEBIAN_FRONTEND=noninteractive
 
 # Add deadsnakes PPA for Python 3.10
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    software-properties-common \
-    && add-apt-repository ppa:deadsnakes/ppa \
+    software-properties-common gpg-agent \
+    && add-apt-repository 'ppa:deadsnakes/ppa' \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install apt dependencies
