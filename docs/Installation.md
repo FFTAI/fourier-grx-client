@@ -36,7 +36,7 @@ The following steps are for Intel CPUs:
    > For now we only support Python 3.11.
 
     ```bash
-    conda create -n grx-env python=3.11
+    conda create -n grx-env python=3.11.10
     conda activate grx-env
     ```
 
@@ -60,7 +60,7 @@ If you are using `ufw`, follow these steps to enable firewall access for the `gr
 
 1. **Install the library:**
     ```bash
-    python -m pip install fourier-grx==1.0.0a18
+    python -m pip install fourier-grx==1.0.0a20
     ```
 
 2. **Verify installation:**
