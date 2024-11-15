@@ -66,7 +66,7 @@ sensor_abs_encoder:
 actuator:
   type: "FIFSAV1"
   use_dic: false # DIC: dynamic inertia compensation, not ready yet
-  comm_enable: [
+  comm_enable: [ # set to true/false to enable/disable communication with actuator
       # left leg
       true,
       true,
@@ -304,4 +304,10 @@ robot_config:
     min_distance: 0.02
     enabled_links: ["right_hand_yaw_link", "left_hand_yaw_link", "torso_link"]
 
-  joints_to_lock: []
+  # if you want to lock some joints in kinematics solving, add them to the list below
+  joints_to_lock: [
+  # uncomment the following lines to lock the waist joints in kinematics solving
+      # "waist_yaw_joint",
+      # "waist_pitch_joint",
+      # "waist_roll_joint"
+  ]

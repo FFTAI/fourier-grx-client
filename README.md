@@ -17,11 +17,11 @@ Default config file can be found under [config](config/) directory.
 ## Installation
 
 
-> **This software is highly unstable and subject to change at any time. Version 0.2.0a8 is only compatible with `fourier-grx` version `v1.0.0a18` and up.**
+> **This software is highly unstable and subject to change at any time. Version 0.2.0a8 is only compatible with `fourier-grx` version `v1.0.0a20` and up.**
 
 ### On the robot computer:
 
-On the robot, install `fourier-grx==1.0.0a18` following the [Installation Instructions](docs/Installation.md).
+On the robot, install `fourier-grx==1.0.0a20` following the [Installation Instructions](docs/Installation.md).
 
 ### On other machines:
 
