@@ -21,7 +21,7 @@ Default config file can be found under [config](config/) directory.
 
 ### On the robot computer:
 
-On the robot, install `fourier-grx==1.0.0a20` following the [Installation Instructions](docs/Installation.md).
+On the robot, install `fourier-grx==1.0.0a21` following the [Installation Instructions](docs/Installation.md).
 
 ### On other machines:
 
