@@ -72,6 +72,7 @@ class RobotClient(ZenohSession):
 
         zenoh_config = zenoh.Config()
         zenoh_config.insert_json5(zenoh.config.CONNECT_KEY, json.dumps([f"tcp/{server_ip}:7447"]))
+        zenoh_config.insert_json5("listen/endpoints", json.dumps(["tcp/0.0.0.0:0"]))
         zenoh_config.insert_json5("scouting/multicast/enabled", "false")
         zenoh_config.insert_json5("scouting/gossip/enabled", "false")
 
